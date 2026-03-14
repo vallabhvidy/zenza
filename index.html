@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Code Runner Graph Tool</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    height:100vh;
+    display:flex;
+}
+
+#left{
+    width:35%;
+    display:flex;
+    flex-direction:column;
+    border-right:1px solid #ccc;
+}
+
+.panel{
+    flex:1;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+}
+
+textarea{
+    flex:1;
+    width:100%;
+    font-family:monospace;
+    font-size:14px;
+}
+
+#right{
+    flex:1;
+}
+
+#editor{
+    width:100%;
+    height:100%;
+}
+
+button{
+    margin-top:8px;
+    padding:10px;
+    font-size:16px;
+}
+
+#popup{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:700px;
+    height:450px;
+    background:white;
+    border:2px solid #444;
+    display:none;
+    padding:10px;
+}
+
+#popup canvas{
+    width:100%;
+    height:100%;
+}
+
+#close{
+    float:left;
+    cursor:pointer;
+    font-size:18px;
+    font-weight:bold;
+}
+
+#stopBtn{
+    float:right;
+    margin-right:10px;
+    padding:5px 10px;
+    font-size:14px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div id="left">
+
+<div class="panel">
+<b>Input Schema</b>
+<textarea id="input_schema">
+{
+  "input": [
+    {
+      "type": "int",
+      "name": "n",
+      "min": 0,
+      "max": 100
+    }
+  ]
+}
+</textarea>
+</div>
+
+<div class="panel">
+<b>X Variable</b>
+<textarea id="x_var">
+{
+  "type": "int",
+  "name": "x",
+  "min": 0,
+  "max": 100
+}
+</textarea>
+
+<button onclick="runCode()">Submit</button>
+
+</div>
+
+</div>
+
+<div id="right">
+<div id="editor"></div>
+</div>
+
+<div id="popup">
+    <span id="close" onclick="closePopup()">✖</span>
+    <button id="stopBtn" onclick="stopCode()">Stop</button>
+    <canvas id="chart"></canvas>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.43.0/min/vs/loader.min.js"></script>
+
+<script>
+
+let editor;
+require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.43.0/min/vs' }});
+
+require(["vs/editor/editor.main"], function () {
+    editor = monaco.editor.create(document.getElementById("editor"), {
+        value:`#include <bits/stdc++.h>
+using namespace std;
+
+int main(){
+    int x;
+    cin >> x;
+    cout << x*x << endl;
+}`,
+        language:"cpp",
+        theme:"vs-dark",
+        automaticLayout:true
+    });
+});
+
+let chart;
+let controller; // For stopping fetch
+
+function openPopup(){
+    document.getElementById("popup").style.display="block";
+
+    const ctx = document.getElementById("chart").getContext("2d");
+
+    chart = new Chart(ctx,{
+        type:"scatter",
+        data:{
+            datasets:[{
+                label:"Output",
+                data:[]
+            }]
+        },
+        options:{
+            animation:false,
+            scales:{
+                x:{type:"linear",position:"bottom"}
+            }
+        }
+    });
+}
+
+function closePopup(){
+    document.getElementById("popup").style.display="none";
+}
+
+function addPoint(x,y){
+    chart.data.datasets[0].data.push({x:x,y:y});
+    chart.update();
+}
+
+async function runCode(){
+    openPopup();
+
+    const payload={
+        code: editor.getValue(),
+        language:"cpp",
+        input_schema: JSON.parse(document.getElementById("input_schema").value),
+        x_var: JSON.parse(document.getElementById("x_var").value)
+    };
+
+    console.log(JSON.stringify(payload, null, 2));
+
+    controller = new AbortController();
+    const signal = controller.signal;
+
+    try{
+        const response = await fetch("http://localhost:8000/run",{
+            method:"POST",
+            headers:{"Content-Type":"application/json", "accept": "application/json"},
+            body:JSON.stringify(payload),
+            signal
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        let buffer = "";
+
+        while(true){
+            const { done, value } = await reader.read();
+            if(done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            let lines = buffer.split("\n");
+            buffer = lines.pop();
+
+            for(const line of lines){
+                if(line.trim().length === 0) continue;
+
+                const data = JSON.parse(line);
+                const x = data.n;
+                const y = Number(data.time);
+
+                addPoint(x, y);
+            }
+        }
+    } catch(err){
+        if(err.name === 'AbortError'){
+            console.log("Plotting stopped by user.");
+        } else {
+            console.error(err);
+        }
+    }
+}
+
+// Stop button handler
+async function stopCode(){
+    if(controller) controller.abort(); // stop current fetch
+
+    // Send stop request to backend
+    await fetch("http://localhost:8000/stop",{
+        method:"POST"
+    });
+
+    console.log("Stop request sent.");
+}
+</script>
+
+</body>
+</html>

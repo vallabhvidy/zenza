@@ -1,0 +1,17 @@
+{
+  "input": [
+    {
+      "type": "int",
+      "name": "n",
+      "min": 0,
+      "max": 100000
+    },
+    {
+      "type": "array",
+      "name": "arr",
+      "size": "n",
+      "min": 0,
+      "max": 100
+    }
+  ]
+}
