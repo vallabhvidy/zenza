@@ -1,7 +1,6 @@
 import resource
 from abc import ABC, abstractmethod
 
-
 def stopwatch(run):
     def wrapper(self, *args, **kargs):
         start_usage = resource.getrusage(resource.RUSAGE_CHILDREN)

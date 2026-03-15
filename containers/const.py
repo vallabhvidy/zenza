@@ -1,0 +1,6 @@
+TESTEND = '------TESTEND------'
+CODEEND = '------CODEEND------'
+END = '------------'
+TIMEOUT = 'Timeout'
+TCERROR = 'Testcase Error'
+SUCCESS = 'SUCCESS'

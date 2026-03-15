@@ -1,5 +1,5 @@
-from python import PythonContainer
-from cpp import CppContainer
+from containers.python.python import PythonContainer
+from containers.cpp.cpp import CppContainer
 
 containers = {
     'cpp': CppContainer,
