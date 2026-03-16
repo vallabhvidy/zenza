@@ -1,9 +1,15 @@
 import subprocess
+import socket
+import uuid
+import os
 from containers.base import Container, stopwatch
 import containers.docker_utils as du
+import containers.socket_utils as su
 import containers.const as const
 
 LANG = 'python'
+IMAGE = f'{LANG}_image'
+DOCKER = 'podman'
 
 class PythonContainer(Container):
     def __init__(self, code):
@@ -12,8 +18,56 @@ class PythonContainer(Container):
         if not du.does_image_exist(LANG):
             du.build_image(LANG)
 
+        self.port = str(uuid.uuid4())
+        self.addr = f'/tmp/sockets/{self.port}'
+
+        try:
+            output = subprocess.run(
+                [DOCKER, 'run', '--rm', '-i', '-v', '/tmp/sockets:/sockets:z', '-d', IMAGE, self.port]
+            )
+        except Exception as e:
+            raise Exception('[CONTAINER]', e)
+        
+        self.client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.client.connect(self.addr)
+        
+        print('[CONNECTING] to container...')
+
+    def run(self, testcase):
+        su.send(self.client, testcase)
+        reply = su.recieve(self.client)
+
+        time = 0
+
+        if reply == su.TESTCASE_ERROR:
+            raise Exception('Invalid testcase format...')
+
+        elif reply == su.TIMEOUT_ERROR:
+            return -1
+
+        else:
+            try:
+                time = float(reply)
+            except Exception as e:
+                raise Exception('Container did not return time...')
+            
+        return time
+    
+    def close(self):
+        su.send(self.client, su.DICONNECT_MESSAGE)
+        os.remove(self.addr)
+
+
+
+class PythonContainerSubprocess(Container):
+    def __init__(self, code):
+        super().__init__(code)
+
+        if not du.does_image_exist(LANG):
+            du.build_image(LANG)
+
         self.container = subprocess.Popen(
-            ['podman', 'run', '--rm', '-i', 'python_image'],
+            [DOCKER, 'run', '--rm', '-i', IMAGE],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True
@@ -57,7 +111,7 @@ class PythonContainer(Container):
         self.container.wait()
 
 
-class _PythonContainer(Container):
+class PythonContainerLocal(Container):
 
     def __init__(self, code):
         self.code = code

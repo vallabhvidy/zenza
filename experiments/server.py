@@ -1,10 +1,8 @@
 import socket
 
-PORT = 5050
-HOST = '127.0.0.1'
-ADDR = (HOST, PORT)
+ADDR = '/tmp/mysocket'
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 server.bind(ADDR)
 server.listen()
 

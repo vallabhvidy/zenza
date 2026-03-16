@@ -1,36 +1,38 @@
 import socket
 
-def get_send_length(message):
+def get_header(message):
     message_length = str(len(message)).encode(FORMAT)
     message_length += b' ' * (HEADER - len(message_length))
     return message_length
 
-HOST = "127.0.0.1"
-PORT = 6666
+ADDR = '/tmp/sockets/test'
 FORMAT = 'utf-8'
 HEADER = 64
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((HOST, PORT))
+client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+client.connect(ADDR)
 
 code = ''
 
 with open('experiments/test2.py', 'r') as f:
     code = f.read()
 
-code_length = get_send_length(code)
+code_length = get_header(code)
 
 client.send(code_length)
 client.send(code.encode(FORMAT))
 
 testcase = '5'
-testcase_length = get_send_length(testcase)
+testcase_length = get_header(testcase)
 
 client.send(testcase_length)
 client.send(testcase.encode(FORMAT))
 
+time = client.recv(1024).decode(FORMAT)
+print(time)
+
 disconnect = '!DISCONNECT'
-disconnect_length = get_send_length(disconnect)
+disconnect_length = get_header(disconnect)
 client.send(disconnect_length)
 client.send(disconnect.encode(FORMAT))
 

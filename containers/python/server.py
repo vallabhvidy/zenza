@@ -3,9 +3,8 @@ import subprocess
 import sys
 import resource
 
-PORT = 6666
-HOST = '0.0.0.0'
-ADDR = (HOST, PORT)
+PORT = sys.argv[1]
+ADDR = f'/sockets/{PORT}'
 
 HEADER  = 64
 FORMAT  = 'utf-8'
@@ -19,12 +18,14 @@ def receive(conn, length):
     message = ''
     while len(message) < length:
         message = conn.recv(length).decode(FORMAT)
+        if not message:
+            raise Exception('[ERROR] socket closed ig...?')
 
     return message
 
 print('[STARTING] container is starting...')
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 server.bind(ADDR)
 server.listen()
 
