@@ -7,3 +7,5 @@ class Code(BaseModel):
     language: Literal['cpp', 'python']
     input_schema: Input = Field(...)
     x_var: Int = Field(...)
+    reduce_noise: bool = Field(default=False)
+    search: bool = Field(default=False)

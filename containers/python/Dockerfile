@@ -4,4 +4,4 @@ WORKDIR /app
 
 COPY server.py .
 
-ENTRYPOINT [ "python", "server.py" ]
+ENTRYPOINT [ "python", "-u", "server.py" ]

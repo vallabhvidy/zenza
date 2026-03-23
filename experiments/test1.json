@@ -1,0 +1,27 @@
+{
+  "code": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main(){\n    int n;\n    cin >> n;\n    vector<int> a(n);\n    for (auto& i: a) cin >> i;\n\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            cout << a[i] << \" \" << a[j] << endl;\n        }\n    }\n\n    return 0;\n}",
+  "language": "cpp",
+  "input_schema": {
+    "input": [
+      {
+        "type": "int",
+        "name": "n",
+        "min": 0,
+        "max": 1000
+      },
+      {
+        "type": "array",
+        "name": "arr",
+        "size": "n",
+        "min": 0,
+        "max": 100
+      }
+    ]
+  },
+  "x_var": {
+    "type": "int",
+    "name": "n",
+    "min": 0,
+    "max": 1000
+  }
+}

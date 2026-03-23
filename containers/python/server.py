@@ -15,13 +15,13 @@ TESTCASE_ERROR = '!TCERROR'
 DICONNECT_MESSAGE = '!DISCONNECT'
 
 def receive(conn, length):
-    message = ''
+    message = b''
     while len(message) < length:
-        message = conn.recv(length).decode(FORMAT)
+        message += conn.recv(length - len(message))
         if not message:
             raise Exception('[ERROR] socket closed ig...?')
 
-    return message
+    return message.decode(FORMAT)
 
 print('[STARTING] container is starting...')
 

@@ -50,22 +50,65 @@ button{
     font-size:16px;
 }
 
+#lang-panel{
+    padding:10px;
+    border-bottom:1px solid #ccc;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+#lang-panel label{
+    font-weight:bold;
+    font-size:14px;
+    white-space:nowrap;
+}
+
+#lang-select{
+    padding:6px 10px;
+    font-size:14px;
+    border:1px solid #ccc;
+    border-radius:4px;
+    cursor:pointer;
+}
+
 #popup{
     position:fixed;
     top:50%;
     left:50%;
     transform:translate(-50%,-50%);
-    width:700px;
-    height:450px;
+    width:500px;
+    height:500px;
     background:white;
     border:2px solid #444;
     display:none;
     padding:10px;
 }
 
+#popup-inner{
+    width:100%;
+    height:calc(100% - 36px);
+    margin-top:4px;
+}
+
 #popup canvas{
     width:100%;
     height:100%;
+}
+
+#error-box{
+    display:none;
+    background:#fff0f0;
+    border:1px solid #f99;
+    color:#900;
+    font-family:monospace;
+    font-size:13px;
+    padding:10px;
+    white-space:pre-wrap;
+    overflow:auto;
+    width:100%;
+    height:100%;
+    box-sizing:border-box;
 }
 
 #close{
@@ -88,6 +131,14 @@ button{
 <body>
 
 <div id="left">
+
+<div id="lang-panel">
+    <label for="lang-select">Language</label>
+    <select id="lang-select" onchange="onLanguageChange()">
+        <option value="cpp">C++</option>
+        <option value="python">Python</option>
+    </select>
+</div>
 
 <div class="panel">
 <b>Input Schema</b>
@@ -129,19 +180,18 @@ button{
 <div id="popup">
     <span id="close" onclick="closePopup()">✖</span>
     <button id="stopBtn" onclick="stopCode()">Stop</button>
-    <canvas id="chart"></canvas>
+    <div id="popup-inner">
+        <canvas id="chart"></canvas>
+        <div id="error-box"></div>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.43.0/min/vs/loader.min.js"></script>
 
 <script>
 
-let editor;
-require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.43.0/min/vs' }});
-
-require(["vs/editor/editor.main"], function () {
-    editor = monaco.editor.create(document.getElementById("editor"), {
-        value:`#include <bits/stdc++.h>
+const defaultCode = {
+    cpp: `#include <bits/stdc++.h>
 using namespace std;
 
 int main(){
@@ -149,17 +199,44 @@ int main(){
     cin >> x;
     cout << x*x << endl;
 }`,
-        language:"cpp",
-        theme:"vs-dark",
-        automaticLayout:true
+    python: `import sys
+
+x = int(sys.stdin.read().strip())
+print(x * x)`
+};
+
+let editor;
+require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.43.0/min/vs' }});
+
+require(["vs/editor/editor.main"], function () {
+    editor = monaco.editor.create(document.getElementById("editor"), {
+        value: defaultCode.cpp,
+        language: "cpp",
+        theme: "vs-dark",
+        automaticLayout: true
     });
 });
 
+function onLanguageChange(){
+    const lang = document.getElementById("lang-select").value;
+    const monacoLang = lang === "cpp" ? "cpp" : "python";
+    monaco.editor.setModelLanguage(editor.getModel(), monacoLang);
+    editor.setValue(defaultCode[lang]);
+}
+
 let chart;
-let controller; // For stopping fetch
+let controller;
 
 function openPopup(){
     document.getElementById("popup").style.display="block";
+    document.getElementById("error-box").style.display="none";
+    document.getElementById("error-box").textContent="";
+    document.getElementById("chart").style.display="block";
+
+    if(chart){
+        chart.destroy();
+        chart=null;
+    }
 
     const ctx = document.getElementById("chart").getContext("2d");
 
@@ -173,8 +250,11 @@ function openPopup(){
         },
         options:{
             animation:false,
+            maintainAspectRatio:true,
+            aspectRatio:1,
             scales:{
-                x:{type:"linear",position:"bottom"}
+                x:{type:"linear",position:"bottom"},
+                y:{type:"linear"}
             }
         }
     });
@@ -192,9 +272,11 @@ function addPoint(x,y){
 async function runCode(){
     openPopup();
 
+    const language = document.getElementById("lang-select").value;
+
     const payload={
         code: editor.getValue(),
-        language:"cpp",
+        language: language,
         input_schema: JSON.parse(document.getElementById("input_schema").value),
         x_var: JSON.parse(document.getElementById("x_var").value)
     };
@@ -211,6 +293,18 @@ async function runCode(){
             body:JSON.stringify(payload),
             signal
         });
+
+        if(!response.ok){
+            const errText = await response.text();
+            let formatted;
+            try{ formatted = JSON.stringify(JSON.parse(errText), null, 2); }
+            catch{ formatted = errText; }
+            const box = document.getElementById("error-box");
+            document.getElementById("chart").style.display="none";
+            box.textContent = `HTTP ${response.status} ${response.statusText}\n\nRequest payload:\n${JSON.stringify(payload, null, 2)}\n\nResponse:\n${formatted}`;
+            box.style.display="block";
+            return;
+        }
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -245,11 +339,9 @@ async function runCode(){
     }
 }
 
-// Stop button handler
 async function stopCode(){
-    if(controller) controller.abort(); // stop current fetch
+    if(controller) controller.abort();
 
-    // Send stop request to backend
     await fetch("http://localhost:8000/stop",{
         method:"POST"
     });

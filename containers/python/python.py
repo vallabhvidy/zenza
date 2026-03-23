@@ -2,6 +2,7 @@ import subprocess
 import socket
 import uuid
 import os
+import time
 from containers.base import Container, stopwatch
 import containers.docker_utils as du
 import containers.socket_utils as su
@@ -10,6 +11,7 @@ import containers.const as const
 LANG = 'python'
 IMAGE = f'{LANG}_image'
 DOCKER = 'podman'
+SOCKET_DIR = '/tmp/sockets'
 
 class PythonContainer(Container):
     def __init__(self, code):
@@ -20,22 +22,46 @@ class PythonContainer(Container):
 
         self.port = str(uuid.uuid4())
         self.addr = f'/tmp/sockets/{self.port}'
+        self.container_id = ''
+
+        print('[CONTAINER] port :', self.port)
+        print('[CONTAINER] address :', self.addr)
 
         try:
+            os.makedirs(SOCKET_DIR, exist_ok=True)
+            
             output = subprocess.run(
-                [DOCKER, 'run', '--rm', '-i', '-v', '/tmp/sockets:/sockets:z', '-d', IMAGE, self.port]
+                [DOCKER, 'run', '--rm', '-v', f'{SOCKET_DIR}:/sockets:z', '-d', IMAGE, self.port]
             )
+
+            self.container_id = output.stdout
+
+            print('[CONTAINER] container id :', self.container_id)
         except Exception as e:
             raise Exception('[CONTAINER]', e)
         
         self.client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.client.connect(self.addr)
+
+        for _ in range(100):
+            try: 
+                self.client.connect(self.addr)
+                break
+            except OSError:
+                print('[SOCKET] socket not yet created retrying after 0.1s...')
+                time.sleep(0.1)
+        else:
+            print('[SOCKET] socket not created in the given time buffer...')
+            raise Exception('[SOCKET] error...')
         
         print('[CONNECTING] to container...')
+        print('[CODE] sending code to container...')
+        su.send(self.client, code)
 
     def run(self, testcase):
+        print('[REQUEST] recieved request for testcase with length :', len(testcase))
         su.send(self.client, testcase)
         reply = su.recieve(self.client)
+        print('[REPLY] replay by the container is', reply)
 
         time = 0
 
