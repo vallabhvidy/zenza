@@ -1,5 +1,5 @@
 {
-  "code": "import sys\n\nn = int(sys.stdin.read().strip())\n\ntotal = 0\nfor i in range(n):\n    for j in range(n):\n        total += 1\n\nprint(total)",
+  "code": "import sys\n\nn = int(sys.stdin.read().strip())\n\ntotal =0\nfor i in range(n):\n    for j in range(n):\n        total +=1\n\nprint(total)",
   "language": "python",
   "input_schema": {
     "input": [
@@ -14,7 +14,7 @@
   "x_var": {
     "type": "int",
     "name": "n",
-    "min": 0,
+    "min": 1,
     "max": 1000
   },
   "reduce_noise": false,

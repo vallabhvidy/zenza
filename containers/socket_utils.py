@@ -16,7 +16,12 @@ def send(conn: socket, message: str):
     conn.send(header)
     conn.send(message.encode(FORMAT))
 
-def recieve(conn: socket):
-    message = conn.recv(1024).decode(FORMAT)
-    return message
+def receive(conn: socket, length: int):
+    message = b''
+    while len(message) < length:
+        message += conn.recv(length - len(message))
+        if not message:
+            raise Exception('[ERROR] socket closed ig...?')
+
+    return message.decode(FORMAT)
     

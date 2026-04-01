@@ -1,6 +1,16 @@
 from typing import Union, Literal, List, Optional, Annotated
 from pydantic import BaseModel, Field
 import random
+import string
+
+def resolve(size: str, context: dict) -> int:
+    size = size.strip()
+    if size.isdigit():
+        return int(size)
+    
+    else:
+        return context[size]
+    
 
 class Int(BaseModel):
     type: Literal['int']
@@ -16,16 +26,34 @@ class Int(BaseModel):
         if self.name != 'NOCONTEXT':
             context[self.name] = value
         return str(value)
-    
 
-def resolve_size(size: str, context: dict) -> int:
-    size = size.strip()
-    if size.isdigit():
-        return int(size)
+class Char(BaseModel):
+    type: Literal['char']
+    name: str
+    fromChars: List[str] = list(string.ascii_lowercase)
+
+    def generate(self, context):
+        if self.name in context:
+            return str(context[self.name])
+        value = random.choice(self.fromChars)
+        if self.name != 'NOCONTEXT':
+            context[self.name] = value
+        return str(value)
     
-    else:
-        return context[size]
-    
+class Float(BaseModel):
+    type: Literal['float']
+    name: str
+    min: int = Field(default=0)
+    max: int = Field(default=10**9)
+
+    def generate(self, context) -> str:
+        if self.name in context:
+            return str(context[self.name])
+        value = random.uniform(self.min, self.max)
+        
+        if self.name != 'NOCONTEXT':
+            context[self.name] = value
+        return str(value)
 
 class Array(BaseModel):
     type: Literal['array']
@@ -35,7 +63,7 @@ class Array(BaseModel):
     max: int = Field(default=10**9)
 
     def generate(self, context):
-        size = resolve_size(self.size, context)
+        size = resolve(self.size, context)
         arr = [Int(
             type='int',
             name='NOCONTEXT',
@@ -52,7 +80,7 @@ class Repeat(BaseModel):
     input: 'Input' = Field(...)
 
     def generate(self, context: dict) -> str:
-        times = resolve_size(self.times, context)
+        times = resolve(self.times, context)
         lines = [self.input.generate(context) for _ in range(times)]
 
         return '\n'.join(lines)

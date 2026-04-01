@@ -1,34 +1,76 @@
 import resource
 from abc import ABC, abstractmethod
+from containers.const import TIMEOUT, TCERROR
+import subprocess
+import tempfile
+import os
 
-def stopwatch(run):
-    def wrapper(self, *args, **kargs):
+TIMEOUT_ERROR  = {"time": 0, "memory": 0, "status": "TLE"}
+TESTCASE_ERROR = {"time": 0, "memory": 0, "status": "RE"}
+TIME_COMMAND = ['/usr/bin/time', '-f', '%M', '-o', 'memory.txt']
+
+def time_command(filename: str) -> list:
+    return ['/usr/bin/time', '-f', '%M', '-o', filename]
+
+class Container(ABC):
+    def __init__(self, code):
+        self.code = code
+        self.command = []
+
+    def run(self, testcase):
+            
+        tmp = tempfile.NamedTemporaryFile(delete=False)
+        path = tmp.name
+        tmp.close()
+
+        command = time_command(path) + self.command
+
         start_usage = resource.getrusage(resource.RUSAGE_CHILDREN)
 
-        result = run(self, *args, **kargs)
+        try:
+            subprocess.run(
+                command,
+                input=testcase,
+                text=True,
+                timeout=2,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=True
+            )
+
+        except subprocess.TimeoutExpired:
+            return TIMEOUT_ERROR
+
+        except subprocess.CalledProcessError as e:
+            return TESTCASE_ERROR
 
         end_usage = resource.getrusage(resource.RUSAGE_CHILDREN)
 
-        cpu_time = (
+        cpu_time_in_ms = ((
             end_usage.ru_utime - start_usage.ru_utime
         ) + (
             end_usage.ru_stime - start_usage.ru_stime
-        )
-
-        return cpu_time if result is None else result
-    
-    return wrapper
+        )) * 1000
 
 
+        try:
+            with open(path, 'r') as f:
+                memory_in_kb = int(f.read().strip())
+        except FileNotFoundError:
+            memory_in_kb = end_usage.ru_maxrss
 
-class Container(ABC):
-    @abstractmethod
-    def __init__(self, code):
-        pass
+        os.remove(path)
 
-    @abstractmethod
-    def run(self, testcase):
-        pass
+        output = {
+            'time': cpu_time_in_ms,
+            'memory': memory_in_kb,
+            'status': 'OK'
+        }
+
+        print('[TIME] time for testcase :', output['time'])
+        print('[MEMORY] memory for testcase :', output['memory'])
+
+        return output
 
     @abstractmethod
     def close(self):
