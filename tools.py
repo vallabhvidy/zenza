@@ -1,3 +1,6 @@
+from typing import Dict, Any
+from sympy import sympify
+
 def exprange(start: int, end: int, factor: float = 2):
     n: int = start
     while n <= end:
@@ -39,6 +42,14 @@ def ao5(run, N: int):
     }
 
     return result
+
+def resolve(exp: str, context: Dict[str, Any]) -> int:
+    result: int = sympify(exp, context)  # type: ignore
+
+    if result.is_integer:
+        return int(result)
+    else:
+        raise ValueError("Expression provided cannot be evaluated...")
         
 
 

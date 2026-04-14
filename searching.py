@@ -1,4 +1,6 @@
 from models.run_request import RunRequest
+from tools import resolve
+
 
 def binary_search(run_request: RunRequest):
     print('[SEARCHING] doing binary search to determine x_max...')
@@ -9,8 +11,8 @@ def binary_search(run_request: RunRequest):
 
     # binary search to figure out the optimal
     # maximum limit of 'n' (input variable).
-    l: int = x_var.min
-    h: int = max(1, x_var.max)
+    l: int = resolve(x_var.min, {})
+    h: int = max(1, resolve(x_var.max, {}))
 
     last_valid: int = -1
 

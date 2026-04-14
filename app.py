@@ -28,17 +28,16 @@ def deactivate_user(run_request: RunRequest):
     active_users.pop(run_request.request_id, None)
 
 def generate_results(run_request: RunRequest):
-
     x_var = run_request.code.x_var
     container = run_request.container
     input_schema = run_request.code.input_schema
 
-    x_min = x_var.min
-    x_max = x_var.max
+    from searching import resolve
 
-    # run the code for different 'n' and stream
+    x_min = resolve(x_var.min, {})
+    x_max = resolve(x_var.max, {})
+
     for n in tools.exprange(x_min, x_max, factor=1.3):
-
         if not run_request.active:
             break
         
@@ -54,7 +53,6 @@ def generate_results(run_request: RunRequest):
     deactivate_user(run_request)
 
 def validate_limits(run_request: RunRequest):
-
     x_min = validation.valid_lower_limit(run_request)
     if x_min == -1:
         print('[ERROR] lower limit of x or testcase format is invalid...')
@@ -121,8 +119,8 @@ def run(request_id: str):
 
     x_min, x_max = validate_limits(run_request)
 
-    run_request.code.x_var.min = x_min
-    run_request.code.x_var.max = x_max
+    run_request.code.x_var.min = str(x_min)
+    run_request.code.x_var.max = str(x_max)
     
     return StreamingResponse(
         generate_results(run_request),

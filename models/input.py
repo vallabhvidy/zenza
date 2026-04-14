@@ -1,31 +1,24 @@
-from typing import Union, Literal, List, Optional, Annotated
+from typing import Union, Literal, List, Optional, Annotated, Dict, Any
 from pydantic import BaseModel, Field
 import random
 import string
-
-def resolve(size: str, context: dict) -> int:
-    size = size.strip()
-    if size.isdigit():
-        return int(size)
-    
-    else:
-        return context[size]
-    
+from tools import resolve
 
 class Int(BaseModel):
     type: Literal['int']
     name: str
-    min: int = Field(default=0)
-    max: int = Field(default=10**9)
+    min: str
+    max: str
 
     def generate(self, context) -> str:
         if self.name in context:
             return str(context[self.name])
-        value = random.randint(self.min, self.max)
-        
+        value = random.randint(resolve(self.min, context), resolve(self.max, context))
+
         if self.name != 'NOCONTEXT':
             context[self.name] = value
         return str(value)
+
 
 class Char(BaseModel):
     type: Literal['char']
@@ -39,37 +32,50 @@ class Char(BaseModel):
         if self.name != 'NOCONTEXT':
             context[self.name] = value
         return str(value)
-    
+
+
 class Float(BaseModel):
     type: Literal['float']
     name: str
-    min: int = Field(default=0)
-    max: int = Field(default=10**9)
+    min: str
+    max: str
 
     def generate(self, context) -> str:
         if self.name in context:
             return str(context[self.name])
-        value = random.uniform(self.min, self.max)
-        
+        value = random.uniform(resolve(self.min, context), resolve(self.max, context))
+
         if self.name != 'NOCONTEXT':
             context[self.name] = value
         return str(value)
+
+
+BaseTypes = Union[Int, Char, Float]
+
+
+class String(BaseModel):
+    type: Literal['string']
+    name: str
+    size: str
+    fromChars: List[str] = list(string.ascii_lowercase)
+
+    def generate(self, context):
+        return ''.join(random.choices(self.fromChars, k=resolve(self.size, context)))
+
 
 class Array(BaseModel):
     type: Literal['array']
     name: str
     size: str
-    min: int = Field(default=0)
-    max: int = Field(default=10**9)
+    sorted: bool
+    elementType: BaseTypes
 
     def generate(self, context):
         size = resolve(self.size, context)
-        arr = [Int(
-            type='int',
-            name='NOCONTEXT',
-            min=self.min,
-            max=self.max
-        ).generate(context) for _ in range(size)]
+        arr = [self.elementType.generate(context) for _ in range(size)]
+
+        if self.sorted:
+            arr = sorted(arr)
 
         return ' '.join(arr)
 
@@ -85,7 +91,9 @@ class Repeat(BaseModel):
 
         return '\n'.join(lines)
 
+
 Node = Annotated[Union[Int, Array, Repeat], Field(..., discriminator='type')]
+
 
 class Input(BaseModel):
     input: List[Node]
@@ -100,6 +108,6 @@ class Input(BaseModel):
 
         return '\n'.join(output_lines)
 
+
 Input.model_rebuild()
 Repeat.model_rebuild()
-
