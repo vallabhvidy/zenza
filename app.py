@@ -42,7 +42,7 @@ def generate_results(run_request: RunRequest):
             break
         
         output = tools.ao5(
-            lambda N : container.run(input_schema.generate({x_var.name: N}) + "\n"),
+            lambda N : container.run(input_schema.generate({x_var.name: int(N)}) + "\n"),
             n
         )
         # output = container.run(input_schema.generate({x_var.name: n}) + "\n")
