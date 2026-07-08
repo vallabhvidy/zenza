@@ -84,11 +84,6 @@ def validate_limits(run_request: RunRequest):
     return x_min, x_max
 
 # API Section
-
-@app.get("/", response_class=HTMLResponse)
-def home():
-    with open("index.html") as f:
-        return f.read()
     
 @app.post("/run_request", response_class=JSONResponse)
 def run_request(code: Code):
@@ -131,3 +126,30 @@ def run(request_id: str):
 def stop(request_id: str):
     if (active_users.get(request_id, -1) != -1):
         active_users[request_id].active = False
+
+# Frontend static asset routes
+@app.get("/", response_class=HTMLResponse)
+def read_root():
+    try:
+        with open("frontend/index.html", "r") as f:
+            return f.read()
+    except FileNotFoundError:
+        return HTMLResponse("<h2>Zenza Frontend index.html not found. Please ensure it exists in the 'frontend' directory.</h2>", status_code=404)
+
+@app.get("/style.css")
+def read_css():
+    from fastapi import Response
+    try:
+        with open("frontend/style.css", "r") as f:
+            return Response(content=f.read(), media_type="text/css")
+    except FileNotFoundError:
+        return Response(status_code=404)
+
+@app.get("/app.js")
+def read_js():
+    from fastapi import Response
+    try:
+        with open("frontend/app.js", "r") as f:
+            return Response(content=f.read(), media_type="application/javascript")
+    except FileNotFoundError:
+        return Response(status_code=404)

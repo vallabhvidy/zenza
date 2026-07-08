@@ -1,0 +1,242 @@
+<!-- Note: This frontend codebase was written and designed by AI. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenza - Algorithm Complexity Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Monaco Editor Loader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="logo-icon"><i class="ri-pulse-fill"></i></div>
+                <div class="brand-text">
+                    <h1>Zenza</h1>
+                    <p>Algorithm Complexity Analyzer</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div class="template-selector">
+                    <label for="template-select"><i class="ri-magic-line"></i> Template:</label>
+                    <select id="template-select" class="styled-select">
+                        <option value="bubble-sort">Bubble Sort - O(N²)</option>
+                        <option value="binary-search">Binary Search - O(log N)</option>
+                        <option value="linear-search">Linear Search - O(N)</option>
+                        <option value="fibonacci">Fibonacci Dynamic - O(N)</option>
+                    </select>
+                </div>
+                
+                <div class="status-indicator">
+                    <span id="backend-status" class="status-badge checking">
+                        <span class="pulse-dot"></span>
+                        <span class="status-text">Checking Backend...</span>
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="workspace-grid">
+            
+            <!-- Left Panel: Configuration & Code -->
+            <section class="panel-left">
+                <!-- Code Section -->
+                <div class="card code-card">
+                    <div class="card-header">
+                        <h2><i class="ri-code-s-slash-line"></i> Source Code</h2>
+                        <div class="language-selector">
+                            <select id="lang-select" class="styled-select-sm">
+                                <option value="python">Python</option>
+                                <option value="cpp">C++</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="editor-outer-container">
+                        <div id="editor-container"></div>
+                        <textarea id="editor-fallback" class="fallback-textarea" style="display: none;" spellcheck="false"></textarea>
+                    </div>
+                </div>
+
+                <!-- Input Schema Builder Card -->
+                <div class="card schema-card">
+                    <div class="card-header">
+                        <h2><i class="ri-node-tree"></i> Input Testcase Generator Schema</h2>
+                        <div class="schema-actions">
+                            <button id="btn-add-int" class="btn-sm"><i class="ri-add-line"></i> Integer</button>
+                            <button id="btn-add-array" class="btn-sm"><i class="ri-add-line"></i> Array</button>
+                            <button id="btn-add-repeat" class="btn-sm"><i class="ri-add-line"></i> Repeat Block</button>
+                        </div>
+                    </div>
+                    <div class="schema-builder-container">
+                        <div id="schema-nodes-list" class="nodes-list">
+                            <!-- Nodes will be added dynamically here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Run Configurations Card -->
+                <div class="card config-card">
+                    <div class="card-header">
+                        <h2><i class="ri-settings-4-line"></i> Execution Parameters</h2>
+                    </div>
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <label for="x-var-select">X-Variable (N)</label>
+                            <select id="x-var-select" class="styled-select">
+                                <!-- Populated dynamically from Int names in schema -->
+                            </select>
+                            <span class="field-help">Variable to scale during benchmark</span>
+                        </div>
+                        
+                        <div class="config-item">
+                            <label for="x-min-input">Min Value</label>
+                            <input type="text" id="x-min-input" value="10" placeholder="e.g. 10">
+                            <span class="field-help">Starting value of N</span>
+                        </div>
+
+                        <div class="config-item">
+                            <label for="x-max-input">Max Value</label>
+                            <input type="text" id="x-max-input" value="1000" placeholder="e.g. 100000">
+                            <span class="field-help">Upper bound limit</span>
+                        </div>
+
+                        <div class="config-item checkbox-item">
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="chk-search">
+                                <label for="chk-search">Auto search optimal max</label>
+                            </div>
+                            <span class="field-help">Binary searches for max stable input size</span>
+                        </div>
+
+                        <div class="config-item checkbox-item">
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="chk-noise" checked>
+                                <label for="chk-noise">Reduce measurement noise</label>
+                            </div>
+                            <span class="field-help">Averages out spikes using multiple runs</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Charts, Terminal & Metrics -->
+            <section class="panel-right">
+                
+                <!-- Controls and High-level Info -->
+                <div class="controls-card">
+                    <button id="btn-run" class="btn-primary">
+                        <i class="ri-play-fill"></i> Run Complexity Benchmark
+                    </button>
+                    <button id="btn-stop" class="btn-danger" disabled>
+                        <i class="ri-stop-fill"></i> Stop
+                    </button>
+                    
+                    <div class="quick-stats">
+                        <div class="stat-box">
+                            <span class="stat-label">Current N</span>
+                            <span id="stat-n" class="stat-value">-</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Avg Time</span>
+                            <span id="stat-time" class="stat-value">-</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Avg Memory</span>
+                            <span id="stat-memory" class="stat-value">-</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Status</span>
+                            <span id="stat-status" class="stat-value">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization Panel -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h2><i class="ri-bar-chart-box-line"></i> Benchmark Visualization</h2>
+                        <div class="chart-controls">
+                            <button id="btn-toggle-time-memory" class="btn-sm active-toggle">Dual Axis</button>
+                            <button id="btn-clear-chart" class="btn-sm"><i class="ri-delete-bin-7-line"></i> Clear</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="benchmarkChart"></canvas>
+                        <div id="chart-fallback" class="fallback-chart-container" style="display: none;">
+                            <div class="fallback-chart-inner">
+                                <p class="fallback-text">Visualization CDN offline. Showing text bar chart:</p>
+                                <div class="fallback-bars" id="fallback-bars-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Console Output / Log Feed -->
+                <div class="card terminal-card">
+                    <div class="card-header">
+                        <h2><i class="ri-terminal-box-line"></i> Run Terminal Log</h2>
+                        <button id="btn-clear-terminal" class="btn-text-sm">Clear</button>
+                    </div>
+                    <div class="terminal-body" id="terminal-output">
+                        <div class="terminal-line system-msg">Zenza terminal initialized. Waiting for benchmark run...</div>
+                    </div>
+                </div>
+
+                <!-- Data Table Panel -->
+                <div class="card table-card">
+                    <div class="card-header">
+                        <h2><i class="ri-table-line"></i> Detailed Run Data</h2>
+                        <button id="btn-export-csv" class="btn-sm"><i class="ri-download-2-line"></i> CSV</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="run-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Variable (N)</th>
+                                    <th>Avg Time (ms)</th>
+                                    <th>Avg Memory (KB)</th>
+                                    <th>Status</th>
+                                    <th>Estimated Complexity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="empty-row">
+                                    <td colspan="5">No data available. Start a benchmark to populate.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- History comparison -->
+                <div class="card history-card">
+                    <div class="card-header">
+                        <h2><i class="ri-history-line"></i> Saved Benchmarks (Comparison)</h2>
+                    </div>
+                    <div class="history-list-wrapper">
+                        <div class="history-list" id="history-items">
+                            <!-- Populated dynamically -->
+                            <div class="no-history">No saved runs yet. Complete a benchmark to save.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
