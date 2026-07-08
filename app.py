@@ -1,16 +1,20 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi import HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from containers.containerize import containers
 from models.code import Code
 from models.run_request import RunRequest
+from factory import WorkerFactory, worker_factory
 import tools
 import validation
 import uuid
 import json
 
 app = FastAPI()
+
+def get_worker_factory() -> WorkerFactory:
+    return worker_factory
 
 app.add_middleware(
     CORSMiddleware,
@@ -86,11 +90,14 @@ def validate_limits(run_request: RunRequest):
 # API Section
     
 @app.post("/run_request", response_class=JSONResponse)
-def run_request(code: Code):
+def run_request(
+    code: Code,
+    factory: WorkerFactory = Depends(get_worker_factory)
+):
     print(f'[REQUEST] got request for code of length = {len(code.code)}')
     
     request_id = str(uuid.uuid4())
-    container = containers[code.language](code.code)
+    container = factory.get_container_class(code.language)(code.code)
 
     run_request = RunRequest(request_id, container, code, True)
 
