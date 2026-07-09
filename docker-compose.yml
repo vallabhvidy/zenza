@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    restart: always
+
+  worker-python:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.worker.python
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - WORKER_STRATEGY=local
+      - QUEUE_NAME=jobs_queue_python
+    depends_on:
+      - redis
+    restart: always
+
+  worker-cpp:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.worker.cpp
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - WORKER_STRATEGY=local
+      - QUEUE_NAME=jobs_queue_cpp
+    depends_on:
+      - redis
+    restart: always
+
+volumes:
+  redis_data:

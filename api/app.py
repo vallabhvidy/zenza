@@ -29,7 +29,8 @@ def run_request(code: Code):
         "code_data": code.model_dump()
     }
 
-    QueueManager.enqueue_job(request_id, payload)
+    queue_name = f"jobs_queue_{code.language}"
+    QueueManager.enqueue_job(request_id, payload, queue_name=queue_name)
 
     return { 'request_id' : request_id }
 

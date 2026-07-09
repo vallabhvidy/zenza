@@ -1,18 +1,19 @@
 import redis
 import json
 from typing import Optional
+from shared.config import settings
 
-r = redis.Redis(host='localhost', port=6379, db=0)
+r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
 class QueueManager:
     @staticmethod
-    def enqueue_job(job_id: str, payload: dict) -> None:
+    def enqueue_job(job_id: str, payload: dict, queue_name: str = "jobs_queue") -> None:
         r.hset(f"job:{job_id}", mapping={
             "status": "QUEUED",
             "results": json.dumps([])
         })
         
-        r.rpush("jobs_queue", json.dumps(payload))
+        r.rpush(queue_name, json.dumps(payload))
 
     @staticmethod
     def get_job_status(job_id: str) -> Optional[dict]:

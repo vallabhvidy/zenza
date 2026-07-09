@@ -1,6 +1,7 @@
 import redis
 import json
 import time
+import os
 from shared.models.code import Code
 from worker.run_request import RunRequest
 from shared.queue_manager import QueueManager, r
@@ -8,6 +9,8 @@ from worker.factory import worker_factory
 from worker.searching import resolve
 import shared.tools as tools
 import worker.validation as validation
+
+QUEUE_NAME = os.getenv("QUEUE_NAME", "jobs_queue")
 
 def process_job(job: dict):
     job_id = job["job_id"]
@@ -68,7 +71,7 @@ def main():
     print("[WORKER] Worker is online and waiting for jobs...")
     while True:
         try:
-            result = r.brpop("jobs_queue", timeout=5)
+            result = r.brpop(QUEUE_NAME, timeout=5)
             if result:
                 _, job_data = result
                 job = json.loads(job_data)
