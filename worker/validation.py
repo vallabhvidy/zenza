@@ -1,5 +1,5 @@
-from searching import binary_search
-from models.run_request import RunRequest
+from worker.searching import binary_search
+from worker.run_request import RunRequest
 
 def valid_lower_limit(run_request: RunRequest):
     print('[VALIDATE] validating lower limit of x variable...')

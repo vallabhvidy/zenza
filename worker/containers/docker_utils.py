@@ -17,7 +17,7 @@ def build_image(language):
 
     try: 
         output = subprocess.run(
-            ['podman', 'build', '-t', f'{language}_image', f'./containers/{language}'],
+            ['podman', 'build', '-t', f'{language}_image', f'./worker/containers/{language}'],
         )
 
     except Exception as e:

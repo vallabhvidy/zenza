@@ -2,11 +2,12 @@ import subprocess
 import tempfile
 import uuid
 import os
-from containers.const import TIMEOUT, TCERROR
+from worker.containers.const import TIMEOUT, TCERROR
 
 from ..base import Container
 
 class CppContainer(Container):
+    timeout = 0.5
     def __init__(self, code: str):
         super().__init__(code)
         self.executable_file_name = str(uuid.uuid4())

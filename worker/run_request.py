@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from containers.base import Container
-from models.code import Code
+from worker.containers.base import Container
+from shared.models.code import Code
 
 @dataclass
 class RunRequest:
@@ -8,4 +8,3 @@ class RunRequest:
     container: Container
     code: Code
     active: bool
-

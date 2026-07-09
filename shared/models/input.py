@@ -2,7 +2,7 @@ from typing import Union, Literal, List, Optional, Annotated, Dict, Any
 from pydantic import BaseModel, Field
 import random
 import string
-from tools import resolve
+from shared.tools import resolve
 
 class Int(BaseModel):
     type: Literal['int']

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Literal
-from models.input import Input, Int
+from shared.models.input import Input, Int
 
 class Code(BaseModel):
     code: str = Field(..., max_length=500_000)

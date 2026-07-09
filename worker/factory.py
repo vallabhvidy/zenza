@@ -1,12 +1,12 @@
 from typing import Type
-from config import settings
-from containers.base import Container
-from containers.python.python import (
+from shared.config import settings
+from worker.containers.base import Container
+from worker.containers.python.python import (
     PythonContainerDocker,
     PythonContainerSubprocess,
     PythonContainer
 )
-from containers.cpp.cpp import CppContainer
+from worker.containers.cpp.cpp import CppContainer
 
 WORKER_REGISTRY = {
     'python': {

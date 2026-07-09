@@ -44,8 +44,6 @@ def ao5(run, N: int):
     return result
 
 def resolve(exp: str, context: Dict[str, Any]) -> int:
-    # print(f"{exp=}")
-
     try:
         return int(exp)
     except ValueError:
@@ -54,17 +52,9 @@ def resolve(exp: str, context: Dict[str, Any]) -> int:
         except ValueError:
             pass
 
-    # print(f"{context=}")
-
     result = sympify(exp, locals=context)
-
-    # print(f"{type(result)=}")
 
     if isinstance(result, int) or isinstance(result, float) or result.is_integer is True:
         return int(result)
     
     raise ValueError("Expression provided cannot be evaluated...")
-        
-
-
-    

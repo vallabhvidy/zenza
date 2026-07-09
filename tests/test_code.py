@@ -4,8 +4,8 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models.code import Code
-from models.input import Int, Input
+from shared.models.code import Code
+from shared.models.input import Int, Input
 
 
 class TestCode:

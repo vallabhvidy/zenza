@@ -1,6 +1,5 @@
-from models.run_request import RunRequest
-from tools import resolve
-
+from worker.run_request import RunRequest
+from shared.tools import resolve
 
 def binary_search(run_request: RunRequest):
     print('[SEARCHING] doing binary search to determine x_max...')

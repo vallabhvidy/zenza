@@ -4,7 +4,8 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models.input import Int, Float, Char, String, Array, Input, Repeat, resolve
+from shared.models.input import Int, Float, Char, String, Array, Input, Repeat
+from shared.tools import resolve
 
 
 class TestResolve:

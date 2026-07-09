@@ -5,11 +5,11 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from searching import binary_search
-from validation import valid_lower_limit, valid_upper_limit
-from models.run_request import RunRequest
-from models.code import Code
-from models.input import Int, Input
+from worker.searching import binary_search
+from worker.validation import valid_lower_limit, valid_upper_limit
+from worker.run_request import RunRequest
+from shared.models.code import Code
+from shared.models.input import Int, Input
 
 
 def create_mock_run_request(
@@ -53,7 +53,7 @@ class TestValidLowerLimit:
         run_request = create_mock_run_request(min_val="5", max_val="100")
 
         result = valid_lower_limit(run_request)
-        assert result == "5"
+        assert result == 5
 
     def test_valid_lower_limit_returns_negative_on_error(self):
         run_request = create_mock_run_request(
@@ -76,7 +76,7 @@ class TestValidUpperLimit:
         run_request = create_mock_run_request(min_val="1", max_val="100", search=False)
 
         result = valid_upper_limit(run_request)
-        assert result == "100"
+        assert result == 100
 
     def test_valid_upper_limit_returns_negative_when_max_invalid(self):
         run_request = create_mock_run_request(

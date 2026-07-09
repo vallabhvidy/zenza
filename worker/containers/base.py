@@ -1,6 +1,6 @@
 import resource
 from abc import ABC, abstractmethod
-from containers.const import TIMEOUT, TCERROR
+from worker.containers.const import TIMEOUT, TCERROR
 import subprocess
 import tempfile
 import os
@@ -13,6 +13,7 @@ def time_command(filename: str) -> list:
     return ['/usr/bin/time', '-f', '%M', '-o', filename]
 
 class Container(ABC):
+    timeout = 0.1
     def __init__(self, code):
         self.code = code
         self.command = []
@@ -32,7 +33,7 @@ class Container(ABC):
                 command,
                 input=testcase,
                 text=True,
-                timeout=2,
+                timeout=self.timeout,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 check=True

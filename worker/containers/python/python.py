@@ -4,10 +4,10 @@ import uuid
 import os
 import time
 import json
-from containers.base import Container
-import containers.docker_utils as du
-import containers.socket_utils as su
-import containers.const as const
+from worker.containers.base import Container
+import worker.containers.docker_utils as du
+import worker.containers.socket_utils as su
+import worker.containers.const as const
 
 LANG = 'python'
 IMAGE = f'{LANG}_image'
