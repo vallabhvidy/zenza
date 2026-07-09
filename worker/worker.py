@@ -71,6 +71,8 @@ def main():
     print("[WORKER] Worker is online and waiting for jobs...")
     while True:
         try:
+            with open("/tmp/worker_heartbeat", "w") as f:
+                f.write(str(time.time()))
             result = r.brpop(QUEUE_NAME, timeout=5)
             if result:
                 _, job_data = result

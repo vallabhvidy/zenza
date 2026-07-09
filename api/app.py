@@ -17,6 +17,10 @@ app.add_middleware(
 )
 
 # API Section
+
+@app.get("/health")
+def health():
+    return {"status": "OK"}
     
 @app.post("/run_request", response_class=JSONResponse)
 def run_request(code: Code):
