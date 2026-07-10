@@ -36,12 +36,7 @@ def process_job(job: dict):
         if x_min == -1:
             raise Exception("Lower limit of x or testcase format is invalid...")
             
-        x_max = validation.valid_upper_limit(run_request)
-        if x_max == -1:
-            raise Exception("Upper limit for x is too large...")
-            
         run_request.code.x_var.min = str(x_min)
-        run_request.code.x_var.max = str(x_max)
         
         x_min_val = resolve(run_request.code.x_var.min, {})
         x_max_val = resolve(run_request.code.x_var.max, {})
@@ -60,6 +55,9 @@ def process_job(job: dict):
             results.append(output)
             
             QueueManager.update_job(job_id, "RUNNING", results=results)
+            
+            if output['status'] != 'OK':
+                break
             
         if run_request.active:
             QueueManager.update_job(job_id, "COMPLETED", results=results)
