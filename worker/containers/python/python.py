@@ -150,6 +150,7 @@ class PythonContainerSubprocess(Container):
 
 
 class PythonContainer(Container):
+    timeout = 0.5
 
     def __init__(self, code):
         super().__init__(code)

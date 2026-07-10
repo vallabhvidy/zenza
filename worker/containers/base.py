@@ -16,7 +16,7 @@ def time_command(filename: str) -> list:
     return ['/usr/bin/time', '-f', '%M', '-o', filename]
 
 class Container(ABC):
-    timeout = 0.1
+    timeout = 1.0
     def __init__(self, code):
         self.code = code
         self.command = []
