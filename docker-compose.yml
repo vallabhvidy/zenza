@@ -21,6 +21,10 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    volumes:
+      - ./shared:/app/shared:z
+      - ./api:/app/api:z
+    command: ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     depends_on:
       redis:
         condition: service_healthy
@@ -41,6 +45,9 @@ services:
       - REDIS_PORT=6379
       - WORKER_STRATEGY=local
       - QUEUE_NAME=jobs_queue_python
+    volumes:
+      - ./shared:/app/shared:z
+      - ./worker:/app/worker:z
     depends_on:
       redis:
         condition: service_healthy
@@ -61,6 +68,9 @@ services:
       - REDIS_PORT=6379
       - WORKER_STRATEGY=local
       - QUEUE_NAME=jobs_queue_cpp
+    volumes:
+      - ./shared:/app/shared:z
+      - ./worker:/app/worker:z
     depends_on:
       redis:
         condition: service_healthy
