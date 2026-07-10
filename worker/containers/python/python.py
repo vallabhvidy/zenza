@@ -4,10 +4,13 @@ import uuid
 import os
 import time
 import json
+import logging
 from worker.containers.base import Container
 import worker.containers.docker_utils as du
 import worker.containers.socket_utils as su
 import worker.containers.const as const
+
+logger = logging.getLogger("worker.python")
 
 LANG = 'python'
 IMAGE = f'{LANG}_image'
@@ -27,8 +30,8 @@ class PythonContainerDocker(Container):
         self.container_id: bytes
         self.client: socket.socket
 
-        print('[CONTAINER] port :', self.port)
-        print('[CONTAINER] address :', self.addr)
+        logger.info(f"Port: {self.port}")
+        logger.info(f"Address: {self.addr}")
         
         self.create_container()
         self.connect_to_container()
@@ -47,7 +50,7 @@ class PythonContainerDocker(Container):
 
             self.container_id = output.stdout
 
-            print('[CONTAINER] container id :', self.container_id)
+            logger.info(f"Container ID: {self.container_id}")
         except Exception as e:
             raise Exception('[CONTAINER]', e)
         
@@ -59,28 +62,28 @@ class PythonContainerDocker(Container):
                 self.client.connect(self.addr)
                 break
             except OSError:
-                print('[SOCKET] socket not yet created retrying after 0.1s...')
+                logger.debug("Socket not yet created, retrying after 0.1s...")
                 time.sleep(DELAY)
         else:
-            print('[SOCKET] socket not created in the given time buffer...')
+            logger.error("Socket not created in the given time buffer")
             raise Exception('[SOCKET] error...')
         
-        print('[CONNECTING] to container...')
+        logger.info("Connecting to container...")
 
     def send_code_to_container(self, code):
-        print('[CODE] sending code to container...')
+        logger.info("Sending code to container...")
         su.send(self.client, code)
         
     # Function to pass testcase to a container and return its output
     def run(self, testcase) -> dict:
-        print('[REQUEST] recieved request for testcase with length :', len(testcase))
+        logger.info(f"Received request for testcase with length: {len(testcase)}")
         su.send(self.client, testcase)
 
         length = int(su.receive(self.client, const.HEADER))
         output = su.receive(self.client, length)
 
-        print('[REPLY] output :', output)
-        print('[REPLY] length of reply by the container is', length)
+        logger.info(f"Reply output: {output}")
+        logger.info(f"Length of reply by the container is {length}")
 
         output = json.loads(output)
 

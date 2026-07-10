@@ -4,6 +4,9 @@ from worker.containers.const import TIMEOUT, TCERROR
 import subprocess
 import tempfile
 import os
+import logging
+
+logger = logging.getLogger("worker.container")
 
 TIMEOUT_ERROR  = {"time": 0, "memory": 0, "status": "TLE"}
 TESTCASE_ERROR = {"time": 0, "memory": 0, "status": "RE"}
@@ -68,8 +71,8 @@ class Container(ABC):
             'status': 'OK'
         }
 
-        print('[TIME] time for testcase :', output['time'])
-        print('[MEMORY] memory for testcase :', output['memory'])
+        logger.info(f"time for testcase: {output['time']} ms")
+        logger.info(f"memory for testcase: {output['memory']} KB")
 
         return output
 

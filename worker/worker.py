@@ -2,6 +2,7 @@ import redis
 import json
 import time
 import os
+import logging
 from shared.models.code import Code
 from worker.run_request import RunRequest
 from shared.queue_manager import QueueManager, r
@@ -10,13 +11,19 @@ from worker.searching import resolve
 import shared.tools as tools
 import worker.validation as validation
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(levelname)s] %(name)s - %(message)s'
+)
+logger = logging.getLogger("worker")
+
 QUEUE_NAME = os.getenv("QUEUE_NAME", "jobs_queue")
 
 def process_job(job: dict):
     job_id = job["job_id"]
     code_data = Code(**job["code_data"])
     
-    print(f"[WORKER] Starting job {job_id}...")
+    logger.info(f"Starting job {job_id}...")
     QueueManager.update_job(job_id, "RUNNING")
     
     ContainerClass = worker_factory.get_container_class(code_data.language)
@@ -56,19 +63,19 @@ def process_job(job: dict):
             
         if run_request.active:
             QueueManager.update_job(job_id, "COMPLETED", results=results)
-            print(f"[WORKER] Job {job_id} completed successfully.")
+            logger.info(f"Job {job_id} completed successfully.")
         else:
             QueueManager.update_job(job_id, "STOPPED", results=results)
-            print(f"[WORKER] Job {job_id} was stopped by user.")
+            logger.info(f"Job {job_id} was stopped by user.")
             
     except Exception as e:
-        print(f"[WORKER] Job {job_id} failed: {e}")
+        logger.error(f"Job {job_id} failed: {e}", exc_info=True)
         QueueManager.update_job(job_id, "FAILED", error=str(e))
     finally:
         container.close()
 
 def main():
-    print("[WORKER] Worker is online and waiting for jobs...")
+    logger.info("Worker is online and waiting for jobs...")
     while True:
         try:
             with open("/tmp/worker_heartbeat", "w") as f:
@@ -79,7 +86,7 @@ def main():
                 job = json.loads(job_data)
                 process_job(job)
         except Exception as e:
-            print(f"[WORKER] Queue listener error: {e}")
+            logger.error(f"Queue listener error: {e}", exc_info=True)
             time.sleep(1)
 
 if __name__ == "__main__":
