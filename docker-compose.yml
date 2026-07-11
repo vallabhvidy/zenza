@@ -36,6 +36,22 @@ services:
       retries: 3
       start_period: 5s
 
+  frontend:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app:z
+      - /app/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: always
+
   worker-python:
     build:
       context: .
