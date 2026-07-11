@@ -68,6 +68,11 @@ services:
       redis:
         condition: service_healthy
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 256M
     healthcheck:
       test: ["CMD", "python", "-c", "import os, time; exit(0 if os.path.exists('/tmp/worker_heartbeat') and time.time() - os.path.getmtime('/tmp/worker_heartbeat') < 15 else 1)"]
       interval: 10s
@@ -91,6 +96,11 @@ services:
       redis:
         condition: service_healthy
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 256M
     healthcheck:
       test: ["CMD", "python", "-c", "import os, time; exit(0 if os.path.exists('/tmp/worker_heartbeat') and time.time() - os.path.getmtime('/tmp/worker_heartbeat') < 15 else 1)"]
       interval: 10s
