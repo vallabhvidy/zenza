@@ -1,7 +1,8 @@
 from typing import Dict, Any
 from sympy import sympify
+from collections.abc import Iterator
 
-def exprange(start: int, end: int, factor: float = 2):
+def exprange(start: int, end: int, factor: float = 2) -> Iterator[int]:
     n: int = start
     while n <= end:
         yield n
@@ -37,7 +38,7 @@ def ao5(run, N: int):
     result = {
         'time': sum(ts) / len(ts),
         'memory': sum(ms) / len(ms),
-        'n': sum(ns) / len(ns),
+        'n': int(sum(ns) / len(ns)),
         'status': 'OK'
     }
 

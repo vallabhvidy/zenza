@@ -12,7 +12,7 @@ export const useExecution = () => {
   const { language, codes } = useEditorStore();
   const code = codes[language];
   const { rootNode, xVar } = useSchemaStore();
-  const { addLog, clearLogs } = useOutputStore();
+  const { addLog, clearLogs, addMetric, clearMetrics, setRunStatus } = useOutputStore();
   const { openOutputModal } = useWorkspaceStore();
 
   const run = useCallback(async () => {
@@ -20,7 +20,9 @@ export const useExecution = () => {
     
     setIsRunning(true);
     clearLogs();
-    openOutputModal('logs');
+    clearMetrics();
+    setRunStatus('QUEUED');
+    openOutputModal('graph');
     
     // Format node for backend (remove client-side 'id' and map 'children' to 'input')
     const formatNodeForBackend = (node: any): any => {
@@ -54,12 +56,30 @@ export const useExecution = () => {
       addLog(`[INFO] Streaming events...`);
 
       await ApiClient.streamRunEvents(reqId, {
-        onEvent: (event) => {
-          // Dump raw event into logs for now
+        onEvent: (event: any) => {
+          // Check if it's a status update event
+          if (event && event.type === 'status' && event.status) {
+            setRunStatus(event.status);
+            addLog(`[STATUS] Job status is now: ${event.status}`);
+            return;
+          }
+
+          // Dump raw event into logs
           addLog(JSON.stringify(event));
+          
+          // Parse and store metric if valid
+          if (event && typeof event.n === 'number' && typeof event.time === 'number') {
+            addMetric({
+              n: event.n,
+              time: event.time,
+              memory: event.memory || 0,
+              status: event.status || 'OK'
+            });
+          }
         },
         onError: (err) => {
           addLog(`[ERROR] Stream error: ${err.message}`);
+          setRunStatus('FAILED');
           setIsRunning(false);
           setCurrentRequestId(null);
         },
@@ -72,19 +92,21 @@ export const useExecution = () => {
 
     } catch (err: any) {
       addLog(`[ERROR] Failed to start job: ${err.message}`);
+      setRunStatus('FAILED');
       setIsRunning(false);
     }
-  }, [code, language, rootNode, xVar, isRunning, addLog, clearLogs, openOutputModal]);
+  }, [code, language, rootNode, xVar, isRunning, addLog, clearLogs, clearMetrics, setRunStatus, openOutputModal]);
 
   const stop = useCallback(async () => {
     if (!currentRequestId) return;
     try {
       addLog(`[INFO] Requesting stop for Job ${currentRequestId}...`);
       await ApiClient.stopRunRequest(currentRequestId);
+      setRunStatus('STOPPED');
     } catch (err: any) {
       addLog(`[ERROR] Failed to stop job: ${err.message}`);
     }
-  }, [currentRequestId, addLog]);
+  }, [currentRequestId, addLog, setRunStatus]);
 
   return { run, stop, isRunning };
 };

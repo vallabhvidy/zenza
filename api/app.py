@@ -56,15 +56,19 @@ def run(request_id: str):
         pubsub.subscribe(f"channel:{request_id}")
         
         current_status = QueueManager.get_job_status(request_id)
-        if current_status and current_status.get("status") in ["COMPLETED", "FAILED", "STOPPED"]:
-            results = json.loads(current_status.get("results", "[]"))
-            for res in results:
-                yield json.dumps(res) + "\n"
-            return
+        if current_status:
+            yield json.dumps({"type": "status", "status": current_status.get("status", "QUEUED")}) + "\n"
+            
+            if current_status.get("status") in ["COMPLETED", "FAILED", "STOPPED"]:
+                results = json.loads(current_status.get("results", "[]"))
+                for res in results:
+                    yield json.dumps(res) + "\n"
+                return
 
         for message in pubsub.listen():
             if message["type"] == "message":
                 data = json.loads(message["data"])
+                yield json.dumps({"type": "status", "status": data["status"]}) + "\n"
                 if data.get("results"):
                     yield json.dumps(data["results"][-1]) + "\n"
                 if data["status"] in ["COMPLETED", "FAILED", "STOPPED"]:

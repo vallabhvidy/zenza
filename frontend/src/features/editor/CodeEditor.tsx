@@ -4,6 +4,7 @@ import { useThemeStore } from '../../store/themeStore';
 import { useExecution } from '../../api/hooks';
 import { TEMPLATES } from '../../store/templates';
 import { Play, Square } from 'lucide-react';
+import { StatusIndicator } from '../output/StatusIndicator';
 import './CodeEditor.css';
 
 export const CodeEditor = () => {
@@ -60,6 +61,8 @@ export const CodeEditor = () => {
               ))}
             </select>
           </div>
+
+          <StatusIndicator />
 
           {isRunning ? (
             <button className="btn-run stop" onClick={stop}>

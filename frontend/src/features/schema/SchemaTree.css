@@ -115,13 +115,13 @@
 }
 
 .node-actions {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 2px;
 }
 
-.tree-node:hover .node-actions {
-  display: flex;
+.tree-node:not(:hover) .node-actions > button {
+  display: none;
 }
 
 .action-btn {

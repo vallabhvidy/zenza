@@ -306,16 +306,13 @@ def main():
         return
     n = int(lines[0])
     
-    # O(2^N) operation: exponential recursion capped at 30 to prevent complete freeze
-    cap_n = min(n, 30)
-    result = fib(cap_n)
+    result = fib(n)
     print(result)
 
 if __name__ == '__main__':
     main()
 `,
     cpp: `#include <iostream>
-#include <algorithm>
 
 long long fib(int val) {
     if (val <= 1) return val;
@@ -326,9 +323,7 @@ int main() {
     int n;
     if (!(std::cin >> n)) return 0;
     
-    // O(2^N) operation: exponential recursion capped at 35 to prevent complete freeze
-    int cap_n = std::min(n, 35);
-    std::cout << fib(cap_n) << std::endl;
+    std::cout << fib(n) << std::endl;
     return 0;
 }
 `

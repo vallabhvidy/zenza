@@ -3,6 +3,8 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useWorkspaceStore } from '../../store/workspaceStore';
 import { useOutputStore } from '../../store/outputStore';
 import { X, Activity, BarChart2, Terminal } from 'lucide-react';
+import { GraphView } from './GraphView';
+import { StatusIndicator } from './StatusIndicator';
 import './OutputModal.css';
 
 export const OutputModal: React.FC = () => {
@@ -35,16 +37,19 @@ export const OutputModal: React.FC = () => {
                 <Terminal size={16} /> Logs
               </button>
             </div>
-            <Dialog.Close asChild>
-              <button className="icon-btn" aria-label="Close">
-                <X size={18} />
-              </button>
-            </Dialog.Close>
+            <div className="dialog-header-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <StatusIndicator />
+              <Dialog.Close asChild>
+                <button className="icon-btn" aria-label="Close">
+                  <X size={18} />
+                </button>
+              </Dialog.Close>
+            </div>
           </div>
           
           <div className="dialog-body">
             {activeOutputTab === 'graph' && (
-              <div className="placeholder-view">Graph Visualization (Coming Soon)</div>
+              <GraphView />
             )}
             {activeOutputTab === 'benchmarks' && (
               <div className="placeholder-view">Benchmarks Data (Coming Soon)</div>

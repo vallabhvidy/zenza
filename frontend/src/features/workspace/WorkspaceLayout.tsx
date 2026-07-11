@@ -5,12 +5,14 @@ import 'allotment/dist/style.css';
 import { SchemaTree } from '../schema/SchemaTree';
 import { CodeEditor } from '../editor/CodeEditor';
 import { useThemeStore, ACCENT_COLORS } from '../../store/themeStore';
-import { Sun, Moon, ChevronDown } from 'lucide-react';
+import { Sun, Moon, ChevronDown, HelpCircle } from 'lucide-react';
+import { HelpModal } from '../help/HelpModal';
 import './WorkspaceLayout.css';
 
 export const WorkspaceLayout: React.FC = () => {
   const { theme, setTheme, accentColor, setAccentColor } = useThemeStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const activeColorObj = ACCENT_COLORS.find(c => c.value === accentColor) || ACCENT_COLORS[0];
@@ -68,6 +70,13 @@ export const WorkspaceLayout: React.FC = () => {
           </div>
           <div className="theme-toggle-group">
             <button
+              className="theme-icon-btn"
+              onClick={() => setIsHelpOpen(true)}
+              title="Help / Guide"
+            >
+              <HelpCircle size={16} />
+            </button>
+            <button
               className={`theme-icon-btn ${theme === 'light' ? 'active' : ''}`}
               onClick={() => setTheme('light')}
               title="Light Mode"
@@ -98,6 +107,8 @@ export const WorkspaceLayout: React.FC = () => {
           </Allotment.Pane>
         </Allotment>
       </div>
+      
+      {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}
     </div>
   );
 };
