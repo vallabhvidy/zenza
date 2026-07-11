@@ -1,0 +1,189 @@
+.schema-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.schema-tree {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.schema-properties {
+  flex: 1;
+  max-height: 40%;
+  overflow: hidden;
+  border-top: 1px solid var(--border-color);
+}
+
+.schema-execution {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.schema-header {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.schema-header h3 {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.header-icon {
+  color: var(--text-muted);
+}
+
+.schema-content {
+  flex: 1;
+  padding: 4px 0;
+  overflow-y: auto;
+}
+
+.tree-node-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.tree-children {
+  position: relative;
+}
+
+/* Indentation Guide Line */
+.indent-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--border-color);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  cursor: pointer;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  user-select: none;
+  position: relative;
+  transition: background-color 0.1s ease;
+}
+
+.tree-node:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.tree-node.selected {
+  background-color: var(--bg-surface-selected);
+  color: var(--accent-primary);
+}
+
+.node-icon {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.tree-node.selected .node-icon {
+  color: var(--accent-primary);
+}
+
+.node-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-actions {
+  display: none;
+  align-items: center;
+  gap: 2px;
+}
+
+.tree-node:hover .node-actions {
+  display: flex;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover:not(:disabled) {
+  background-color: var(--border-color);
+  color: var(--text-main);
+}
+
+.action-btn.danger:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.action-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.add-menu {
+  position: relative;
+  display: flex;
+}
+
+.add-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--bg-dialog);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--dialog-radius);
+  z-index: 10;
+  flex-direction: column;
+  min-width: 90px;
+  padding: 4px;
+}
+
+.add-menu:hover .add-dropdown {
+  display: flex;
+}
+
+.add-dropdown div {
+  padding: 6px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-main);
+  border-radius: 4px;
+}
+
+.add-dropdown div:hover {
+  background-color: var(--bg-surface-hover);
+}
