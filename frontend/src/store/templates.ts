@@ -22,38 +22,24 @@ export interface Template {
   schema: TemplateSchemaNode;
 }
 
-const DEFAULT_ARRAY_SCHEMA: TemplateSchemaNode = {
+const createArraySchema = (maxN: string, sorted = false): TemplateSchemaNode => ({
   type: 'input',
   children: [
-    { type: 'int', name: 'n', min: '1', max: '10' },
+    { type: 'int', name: 'n', min: '1', max: maxN },
     { 
       type: 'array', 
       name: 'A', 
       size: 'n', 
-      sorted: false, 
+      sorted: sorted, 
       elementType: { type: 'int', name: 'element', min: '1', max: '100' } 
     }
   ]
-};
-
-const SORTED_ARRAY_SCHEMA: TemplateSchemaNode = {
-  type: 'input',
-  children: [
-    { type: 'int', name: 'n', min: '1', max: '10' },
-    { 
-      type: 'array', 
-      name: 'A', 
-      size: 'n', 
-      sorted: true, 
-      elementType: { type: 'int', name: 'element', min: '1', max: '100' } 
-    }
-  ]
-};
+});
 
 const EXPONENTIAL_SCHEMA: TemplateSchemaNode = {
   type: 'input',
   children: [
-    { type: 'int', name: 'n', min: '1', max: '10' }
+    { type: 'int', name: 'n', min: '1', max: '40' }
   ]
 };
 
@@ -62,7 +48,7 @@ export const TEMPLATES: Template[] = [
     id: 'o1',
     name: 'O(1) Constant',
     complexity: 'O(1)',
-    schema: DEFAULT_ARRAY_SCHEMA,
+    schema: createArraySchema('300000'),
     python: `import sys
 
 def main():
@@ -101,7 +87,7 @@ int main() {
     id: 'ologn',
     name: 'O(log N) Logarithmic',
     complexity: 'O(log N)',
-    schema: SORTED_ARRAY_SCHEMA,
+    schema: createArraySchema('300000', true),
     python: `import sys
 
 def binary_search(arr, target):
@@ -157,7 +143,7 @@ int main() {
     id: 'on',
     name: 'O(N) Linear',
     complexity: 'O(N)',
-    schema: DEFAULT_ARRAY_SCHEMA,
+    schema: createArraySchema('150000'),
     python: `import sys
 
 def main():
@@ -203,7 +189,7 @@ int main() {
     id: 'onlogn',
     name: 'O(N log N) Sorting',
     complexity: 'O(N log N)',
-    schema: DEFAULT_ARRAY_SCHEMA,
+    schema: createArraySchema('100000'),
     python: `import sys
 
 def main():
@@ -244,7 +230,7 @@ int main() {
     id: 'on2',
     name: 'O(N²) Quadratic',
     complexity: 'O(N²)',
-    schema: DEFAULT_ARRAY_SCHEMA,
+    schema: createArraySchema('10000'),
     python: `import sys
 
 def main():

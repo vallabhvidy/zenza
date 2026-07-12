@@ -68,9 +68,16 @@ export const useEditorStore = create<EditorState>((set) => ({
       
       // Convert schema nodes to include unique IDs and set in schema store
       const newRootNode = convertTemplateNode(template.schema) as InputNode;
+      const nChild = template.schema.children?.find((c) => c.name === 'n');
       useSchemaStore.setState({ 
         rootNode: newRootNode,
-        selectedNodeId: null 
+        selectedNodeId: null,
+        xVar: {
+          type: 'int',
+          name: 'n',
+          min: nChild?.min || '1',
+          max: nChild?.max || '10',
+        }
       });
 
       return {
