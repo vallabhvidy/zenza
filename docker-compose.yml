@@ -73,6 +73,7 @@ services:
         limits:
           cpus: '1.0'
           memory: 256M
+          pids: 100
     healthcheck:
       test: ["CMD", "python", "-c", "import os, time; exit(0 if os.path.exists('/tmp/worker_heartbeat') and time.time() - os.path.getmtime('/tmp/worker_heartbeat') < 15 else 1)"]
       interval: 10s
@@ -101,6 +102,7 @@ services:
         limits:
           cpus: '1.0'
           memory: 256M
+          pids: 100
     healthcheck:
       test: ["CMD", "python", "-c", "import os, time; exit(0 if os.path.exists('/tmp/worker_heartbeat') and time.time() - os.path.getmtime('/tmp/worker_heartbeat') < 15 else 1)"]
       interval: 10s
