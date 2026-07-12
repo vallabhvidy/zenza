@@ -1,0 +1,23 @@
+# Caddyfile for zenza.dynv6.net
+# Make sure ports 80 and 443 are forwarded from your router to this server.
+
+zenza.dynv6.net {
+    # Route all API requests (e.g. /api/run_request) to the backend API,
+    # stripping the "/api" prefix so the backend receives "/run_request".
+    handle_path /api* {
+        # Option A: For Docker Compose setup (Recommended)
+        reverse_proxy api:8000
+
+        # Option B: For Host-based Caddy (Uncomment if running Caddy on the host system)
+        # reverse_proxy localhost:8000
+    }
+
+    # Route all other traffic to the frontend
+    handle {
+        # Option A: For Docker Compose setup (Recommended)
+        reverse_proxy frontend:5173
+
+        # Option B: For Host-based Caddy (Uncomment if running Caddy on the host system)
+        # reverse_proxy localhost:5173
+    }
+}
