@@ -62,6 +62,7 @@ services:
       - REDIS_PORT=${REDIS_PORT:-6379}
       - WORKER_STRATEGY=${WORKER_STRATEGY:-local}
       - QUEUE_NAME=${QUEUE_NAME_PYTHON:-jobs_queue_python}
+      - WORKER_TIMEOUT=${WORKER_TIMEOUT:-10}
     volumes:
       - ./shared:/app/shared:z
       - ./worker:/app/worker:z
@@ -91,6 +92,7 @@ services:
       - REDIS_PORT=${REDIS_PORT:-6379}
       - WORKER_STRATEGY=${WORKER_STRATEGY:-local}
       - QUEUE_NAME=${QUEUE_NAME_CPP:-jobs_queue_cpp}
+      - WORKER_TIMEOUT=${WORKER_TIMEOUT:-10}
     volumes:
       - ./shared:/app/shared:z
       - ./worker:/app/worker:z

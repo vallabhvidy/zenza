@@ -17,6 +17,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger("worker")
 
+hard_timeout = float(os.getenv("WORKER_TIMEOUT", "10.0"))
+
 QUEUE_NAME = os.getenv("QUEUE_NAME", "jobs_queue")
 
 def process_job(job: dict):
@@ -26,12 +28,19 @@ def process_job(job: dict):
     logger.info(f"Starting job {job_id}...")
     QueueManager.update_job(job_id, "RUNNING")
     
+    start_time = time.time()
+    
     ContainerClass = worker_factory.get_container_class(code_data.language)
     container = ContainerClass(code_data.code)
     
     run_request = RunRequest(job_id, container, code_data, True)
     
     try:
+        elapsed = time.time() - start_time
+        remaining = hard_timeout - elapsed
+        if remaining <= 0:
+            raise TimeoutError("Job execution exceeded the hard timeout limit.")
+
         x_min = validation.valid_lower_limit(run_request)
         if x_min == -1:
             raise Exception("Lower limit of x or testcase format is invalid...")
@@ -48,6 +57,11 @@ def process_job(job: dict):
                 run_request.active = False
                 break
                 
+            elapsed = time.time() - start_time
+            remaining = hard_timeout - elapsed
+            if remaining <= 0:
+                raise TimeoutError("Job execution exceeded the hard timeout limit.")
+
             output = tools.ao5(
                 lambda N : container.run(run_request.code.input_schema.generate({run_request.code.x_var.name: int(N)}) + "\n"),
                 n
@@ -72,12 +86,18 @@ def process_job(job: dict):
     finally:
         container.close()
 
+def update_health_status():
+    try:
+        with open("/tmp/worker_heartbeat", "w") as f:
+            f.write(str(time.time()))
+    except Exception as e:
+        logger.error(f"Failed to update health status: {e}", exc_info=True)
+
 def main():
     logger.info("Worker is online and waiting for jobs...")
     while True:
         try:
-            with open("/tmp/worker_heartbeat", "w") as f:
-                f.write(str(time.time()))
+            update_health_status()
             result = r.brpop(QUEUE_NAME, timeout=5)
             if result:
                 _, job_data = result
