@@ -39,7 +39,9 @@ def process_job(job: dict):
         elapsed = time.time() - start_time
         remaining = hard_timeout - elapsed
         if remaining <= 0:
-            raise TimeoutError("Job execution exceeded the hard timeout limit.")
+            logger.warning(f"Job {job_id} timed out before starting. Completing with empty results.")
+            QueueManager.update_job(job_id, "COMPLETED", results=[])
+            return
 
         x_min = validation.valid_lower_limit(run_request)
         if x_min == -1:
@@ -63,7 +65,8 @@ def process_job(job: dict):
                 elapsed = time.time() - start_time
                 remaining = hard_timeout - elapsed
                 if remaining <= 0:
-                    raise TimeoutError("Job execution exceeded the hard timeout limit.")
+                    logger.warning(f"Job {job_id} reached the hard timeout limit. Completing with partial results.")
+                    break
 
                 output = tools.ao5(
                     lambda N : container.run(run_request.code.input_schema.generate({run_request.code.x_var.name: int(N)}) + "\n"),
