@@ -51,27 +51,34 @@ def process_job(job: dict):
         x_max_val = resolve(run_request.code.x_var.max, {})
         
         results = []
-        for n in tools.exprange(x_min_val, x_max_val, factor=1.3):
-            job_status = QueueManager.get_job_status(job_id)
-            if not job_status or job_status.get("status") == "STOPPED":
-                run_request.active = False
-                break
-                
-            elapsed = time.time() - start_time
-            remaining = hard_timeout - elapsed
-            if remaining <= 0:
-                raise TimeoutError("Job execution exceeded the hard timeout limit.")
+        range_gen = tools.adaptive_range(x_min_val, x_max_val)
+        try:
+            n = next(range_gen)
+            while True:
+                job_status = QueueManager.get_job_status(job_id)
+                if not job_status or job_status.get("status") == "STOPPED":
+                    run_request.active = False
+                    break
+                    
+                elapsed = time.time() - start_time
+                remaining = hard_timeout - elapsed
+                if remaining <= 0:
+                    raise TimeoutError("Job execution exceeded the hard timeout limit.")
 
-            output = tools.ao5(
-                lambda N : container.run(run_request.code.input_schema.generate({run_request.code.x_var.name: int(N)}) + "\n"),
-                n
-            )
-            results.append(output)
-            
-            QueueManager.update_job(job_id, "RUNNING", results=results)
-            
-            if output['status'] != 'OK':
-                break
+                output = tools.ao5(
+                    lambda N : container.run(run_request.code.input_schema.generate({run_request.code.x_var.name: int(N)}) + "\n"),
+                    n
+                )
+                results.append(output)
+                
+                QueueManager.update_job(job_id, "RUNNING", results=results)
+                
+                if output['status'] != 'OK':
+                    break
+                
+                n = range_gen.send(output['time'])
+        except StopIteration:
+            pass
             
         if run_request.active:
             QueueManager.update_job(job_id, "COMPLETED", results=results)
