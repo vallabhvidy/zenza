@@ -2,7 +2,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT_EXTERNAL:-6379}:6379"
     volumes:
       - redis_data:/data
     restart: always
@@ -17,10 +17,10 @@ services:
       context: .
       dockerfile: dockerfiles/Dockerfile.api
     ports:
-      - "8000:8000"
+      - "${API_PORT_EXTERNAL:-8000}:8000"
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
     volumes:
       - ./shared:/app/shared:z
       - ./api:/app/api:z
@@ -41,9 +41,9 @@ services:
       context: .
       dockerfile: dockerfiles/Dockerfile.frontend
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT_EXTERNAL:-5173}:5173"
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
     volumes:
       - ./frontend:/app:z
       - /app/node_modules
@@ -57,10 +57,10 @@ services:
       context: .
       dockerfile: dockerfiles/Dockerfile.worker.python
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - WORKER_STRATEGY=local
-      - QUEUE_NAME=jobs_queue_python
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - WORKER_STRATEGY=${WORKER_STRATEGY:-local}
+      - QUEUE_NAME=${QUEUE_NAME_PYTHON:-jobs_queue_python}
     volumes:
       - ./shared:/app/shared:z
       - ./worker:/app/worker:z
@@ -71,9 +71,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 256M
-          pids: 100
+          cpus: '${WORKER_CPU_LIMIT:-1.0}'
+          memory: ${WORKER_MEMORY_LIMIT:-256M}
+          pids: ${WORKER_PIDS_LIMIT:-100}
     healthcheck:
       test: ["CMD", "python", "-c", "import os, time; exit(0 if os.path.exists('/tmp/worker_heartbeat') and time.time() - os.path.getmtime('/tmp/worker_heartbeat') < 15 else 1)"]
       interval: 10s
@@ -86,10 +86,10 @@ services:
       context: .
       dockerfile: dockerfiles/Dockerfile.worker.cpp
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - WORKER_STRATEGY=local
-      - QUEUE_NAME=jobs_queue_cpp
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - WORKER_STRATEGY=${WORKER_STRATEGY:-local}
+      - QUEUE_NAME=${QUEUE_NAME_CPP:-jobs_queue_cpp}
     volumes:
       - ./shared:/app/shared:z
       - ./worker:/app/worker:z
@@ -100,9 +100,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 256M
-          pids: 100
+          cpus: '${WORKER_CPU_LIMIT:-1.0}'
+          memory: ${WORKER_MEMORY_LIMIT:-256M}
+          pids: ${WORKER_PIDS_LIMIT:-100}
     healthcheck:
       test: ["CMD", "python", "-c", "import os, time; exit(0 if os.path.exists('/tmp/worker_heartbeat') and time.time() - os.path.getmtime('/tmp/worker_heartbeat') < 15 else 1)"]
       interval: 10s
