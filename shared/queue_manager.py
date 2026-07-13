@@ -3,7 +3,10 @@ import json
 from typing import Optional
 from shared.config import settings
 
-r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
+if settings.REDIS_URL:
+    r = redis.from_url(settings.REDIS_URL, db=0)
+else:
+    r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
 class QueueManager:
     @staticmethod
