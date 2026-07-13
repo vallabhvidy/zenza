@@ -1,0 +1,32 @@
+services:
+  worker-python:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.worker.python
+    environment:
+      - REDIS_URL=${REDIS_URL}
+      - WORKER_STRATEGY=${WORKER_STRATEGY:-local}
+      - QUEUE_NAME=${QUEUE_NAME_PYTHON:-jobs_queue_python}
+      - WORKER_TIMEOUT=${WORKER_TIMEOUT:-10}
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '${WORKER_CPU_LIMIT:-1.0}'
+          memory: ${WORKER_MEMORY_LIMIT:-256M}
+
+  worker-cpp:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.worker.cpp
+    environment:
+      - REDIS_URL=${REDIS_URL}
+      - WORKER_STRATEGY=${WORKER_STRATEGY:-local}
+      - QUEUE_NAME=${QUEUE_NAME_CPP:-jobs_queue_cpp}
+      - WORKER_TIMEOUT=${WORKER_TIMEOUT:-10}
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '${WORKER_CPU_LIMIT:-1.0}'
+          memory: ${WORKER_MEMORY_LIMIT:-256M}
