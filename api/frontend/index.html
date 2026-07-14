@@ -1,13 +1,16 @@
 <!-- Note: This frontend codebase was written and designed by AI. -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zenza - Algorithm Complexity Analyzer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <!-- Monaco Editor Loader -->
@@ -15,6 +18,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body class="dark-theme">
     <div class="app-container">
 
@@ -28,7 +32,7 @@
                     <p>Algorithm Complexity Analyzer</p>
                 </div>
             </div>
-            
+
             <div class="header-actions">
                 <div class="template-selector">
                     <label for="template-select"><i class="ri-magic-line"></i> Template:</label>
@@ -39,7 +43,7 @@
                         <option value="fibonacci">Fibonacci Dynamic - O(N)</option>
                     </select>
                 </div>
-                
+
                 <div class="status-indicator">
                     <span id="backend-status" class="status-badge checking">
                         <span class="pulse-dot"></span>
@@ -51,7 +55,7 @@
 
         <!-- Main Workspace -->
         <main class="workspace-grid">
-            
+
             <!-- Left Panel: Configuration & Code -->
             <section class="panel-left">
                 <!-- Code Section -->
@@ -67,7 +71,8 @@
                     </div>
                     <div class="editor-outer-container">
                         <div id="editor-container"></div>
-                        <textarea id="editor-fallback" class="fallback-textarea" style="display: none;" spellcheck="false"></textarea>
+                        <textarea id="editor-fallback" class="fallback-textarea" style="display: none;"
+                            spellcheck="false"></textarea>
                     </div>
                 </div>
 
@@ -101,7 +106,7 @@
                             </select>
                             <span class="field-help">Variable to scale during benchmark</span>
                         </div>
-                        
+
                         <div class="config-item">
                             <label for="x-min-input">Min Value</label>
                             <input type="text" id="x-min-input" value="10" placeholder="e.g. 10">
@@ -135,7 +140,7 @@
 
             <!-- Right Panel: Charts, Terminal & Metrics -->
             <section class="panel-right">
-                
+
                 <!-- Controls and High-level Info -->
                 <div class="controls-card">
                     <button id="btn-run" class="btn-primary">
@@ -144,7 +149,7 @@
                     <button id="btn-stop" class="btn-danger" disabled>
                         <i class="ri-stop-fill"></i> Stop
                     </button>
-                    
+
                     <div class="quick-stats">
                         <div class="stat-box">
                             <span class="stat-label">Current N</span>
@@ -171,7 +176,8 @@
                         <h2><i class="ri-bar-chart-box-line"></i> Benchmark Visualization</h2>
                         <div class="chart-controls">
                             <button id="btn-toggle-time-memory" class="btn-sm active-toggle">Dual Axis</button>
-                            <button id="btn-clear-chart" class="btn-sm"><i class="ri-delete-bin-7-line"></i> Clear</button>
+                            <button id="btn-clear-chart" class="btn-sm"><i class="ri-delete-bin-7-line"></i>
+                                Clear</button>
                         </div>
                     </div>
                     <div class="chart-wrapper">
@@ -192,7 +198,8 @@
                         <button id="btn-clear-terminal" class="btn-text-sm">Clear</button>
                     </div>
                     <div class="terminal-body" id="terminal-output">
-                        <div class="terminal-line system-msg">Zenza terminal initialized. Waiting for benchmark run...</div>
+                        <div class="terminal-line system-msg">Zenza terminal initialized. Waiting for benchmark run...
+                        </div>
                     </div>
                 </div>
 
@@ -215,7 +222,7 @@
                             </thead>
                             <tbody>
                                 <tr class="empty-row">
-                                    <td colspan="5">No data available. Start a benchmark to populate.</td>
+                                    <td colspan="5">No data available.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -239,4 +246,5 @@
     </div>
     <script src="app.js"></script>
 </body>
+
 </html>

@@ -53,7 +53,7 @@ const convertTemplateNode = (node: any): any => {
 };
 
 export const useEditorStore = create<EditorState>((set) => ({
-  language: 'python',
+  language: 'cpp',
   codes: DEFAULT_TEMPLATES,
   setCode: (code) =>
     set((state) => ({

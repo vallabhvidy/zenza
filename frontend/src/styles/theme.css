@@ -18,7 +18,7 @@
 
   --text-main: #1e293b;
   --text-muted: #64748b;
-  --text-accent: #0f172a;
+  --text-accent: #09090b;
 
   --border-color: #e2e8f0;
   --border-focus: #94a3b8;
@@ -41,22 +41,22 @@
 }
 
 [data-theme='dark'] {
-  --bg-base: #0f172a;
-  --bg-surface: #1e293b;
-  --bg-surface-hover: #334155;
+  --bg-base: #09090b;
+  --bg-surface: #18181b;
+  --bg-surface-hover: #27272a;
   --bg-surface-selected: rgba(255,255,255,0.05);
-  --bg-dialog: #1e293b;
+  --bg-dialog: #18181b;
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-accent: #f1f5f9;
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --text-accent: #f4f4f5;
 
-  --border-color: #334155;
-  --border-focus: #475569;
+  --border-color: #27272a;
+  --border-focus: #3f3f46;
 
   /* Dark mode specific scrollbars */
-  --scrollbar-thumb: #475569;
-  --scrollbar-thumb-hover: #64748b;
+  --scrollbar-thumb: #3f3f46;
+  --scrollbar-thumb-hover: #52525b;
 }
 
 body {

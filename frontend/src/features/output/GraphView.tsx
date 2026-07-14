@@ -12,7 +12,7 @@ import { useOutputStore } from '../../store/outputStore';
 import './GraphView.css';
 
 export const GraphView: React.FC = () => {
-  const { metrics } = useOutputStore();
+  const { metrics, runStatus } = useOutputStore();
   const [metricType, setMetricType] = useState<'time' | 'memory'>('time');
 
   if (metrics.length === 0) {
@@ -20,7 +20,6 @@ export const GraphView: React.FC = () => {
       <div className="graph-empty-state">
         <div className="empty-icon">📈</div>
         <div className="empty-title">No Data Available</div>
-        <div className="empty-subtitle">Run the code to see performance graphs here.</div>
       </div>
     );
   }
@@ -33,10 +32,11 @@ export const GraphView: React.FC = () => {
 
   const accentPrimary = getCssVar('--accent-primary', '#3b82f6');
   const textMuted = getCssVar('--text-muted', '#94a3b8');
-  const bgSurface = getCssVar('--bg-surface', '#1e293b');
-  const borderColor = getCssVar('--border-color', '#334155');
+  const bgSurface = getCssVar('--bg-surface', '#18181b');
+  const borderColor = getCssVar('--border-color', '#27272a');
   const textMain = getCssVar('--text-main', '#f8fafc');
 
+  const isCompleted = runStatus !== 'RUNNING' && runStatus !== 'QUEUED';
   const isTime = metricType === 'time';
   const dataKey = isTime ? 'time' : 'memory';
   const yAxisLabel = isTime ? 'Time (ms)' : 'Memory (KB)';
@@ -55,13 +55,13 @@ export const GraphView: React.FC = () => {
           </span>
         </div>
         <div className="graph-toggle-group">
-          <button 
+          <button
             className={`toggle-btn ${isTime ? 'active' : ''}`}
             onClick={() => setMetricType('time')}
           >
             Time
           </button>
-          <button 
+          <button
             className={`toggle-btn ${!isTime ? 'active' : ''}`}
             onClick={() => setMetricType('memory')}
           >
@@ -76,26 +76,26 @@ export const GraphView: React.FC = () => {
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke={borderColor} vertical={false} />
-            <XAxis 
-              dataKey="n" 
+            <XAxis
+              dataKey="n"
               type="number"
               domain={['dataMin', 'dataMax']}
-              stroke={textMuted} 
+              stroke={textMuted}
               tick={{ fill: textMuted, fontSize: 12 }}
               tickLine={{ stroke: borderColor }}
               axisLine={{ stroke: borderColor }}
               label={{ value: 'Input Size (N)', position: 'insideBottom', offset: -10, fill: textMuted, fontSize: 13 }}
             />
-            <YAxis 
+            <YAxis
               stroke={textMuted}
               tick={{ fill: textMuted, fontSize: 12 }}
               tickLine={{ stroke: borderColor }}
               axisLine={{ stroke: borderColor }}
               label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', offset: 0, fill: textMuted, fontSize: 13 }}
             />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: bgSurface, 
+            <Tooltip
+              contentStyle={{
+                backgroundColor: bgSurface,
                 borderColor: borderColor,
                 borderRadius: '6px',
                 color: textMain,
@@ -107,10 +107,10 @@ export const GraphView: React.FC = () => {
               labelFormatter={(label: any) => `N = ${label}`}
               animationDuration={200}
             />
-            <Line 
-              type="monotone" 
-              dataKey={dataKey} 
-              stroke={accentPrimary} 
+            <Line
+              type="monotone"
+              dataKey={dataKey}
+              stroke={isCompleted ? accentPrimary : 'transparent'}
               strokeWidth={3}
               dot={{ r: 4, fill: bgSurface, stroke: accentPrimary, strokeWidth: 2 }}
               activeDot={{ r: 6, fill: accentPrimary, stroke: bgSurface, strokeWidth: 2 }}
