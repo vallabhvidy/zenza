@@ -3,13 +3,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from shared.models.code import Code
-from shared.queue_manager import QueueManager, r
+from shared.queue_manager import AsyncQueueManager
 import uuid
 import json
 
 app = FastAPI()
 
-allowed_origins = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+allowed_origins = [origin.strip() for origin in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",")]
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,7 +26,7 @@ def health():
     return {"status": "OK"}
     
 @app.post("/run_request", response_class=JSONResponse)
-def run_request(code: Code):
+async def run_request(code: Code):
     print(f'[REQUEST] got request for code of length = {len(code.code)}')
     
     request_id = str(uuid.uuid4())
@@ -37,13 +37,13 @@ def run_request(code: Code):
     }
 
     queue_name = f"jobs_queue_{code.language}"
-    QueueManager.enqueue_job(request_id, payload, queue_name=queue_name)
+    await AsyncQueueManager.enqueue_job(request_id, payload, queue_name=queue_name)
 
     return { 'request_id' : request_id }
 
 @app.post('/run/{request_id}')
-def run(request_id: str):
-    job_status = QueueManager.get_job_status(request_id)
+async def run(request_id: str):
+    job_status = await AsyncQueueManager.get_job_status(request_id)
 
     if not job_status:
         raise HTTPException(
@@ -54,11 +54,11 @@ def run(request_id: str):
             }
         )
 
-    def event_generator():
-        pubsub = r.pubsub()
-        pubsub.subscribe(f"channel:{request_id}")
+    async def event_generator():
+        pubsub = AsyncQueueManager.get_pubsub()
+        await pubsub.subscribe(f"channel:{request_id}")
         
-        current_status = QueueManager.get_job_status(request_id)
+        current_status = await AsyncQueueManager.get_job_status(request_id)
         if current_status:
             yield json.dumps({"type": "status", "status": current_status.get("status", "QUEUED")}) + "\n"
             
@@ -66,9 +66,10 @@ def run(request_id: str):
                 results = json.loads(current_status.get("results", "[]"))
                 for res in results:
                     yield json.dumps(res) + "\n"
+                await pubsub.unsubscribe()
                 return
 
-        for message in pubsub.listen():
+        async for message in pubsub.listen():
             if message["type"] == "message":
                 data = json.loads(message["data"])
                 yield json.dumps({"type": "status", "status": data["status"]}) + "\n"
@@ -76,6 +77,8 @@ def run(request_id: str):
                     yield json.dumps(data["results"][-1]) + "\n"
                 if data["status"] in ["COMPLETED", "FAILED", "STOPPED"]:
                     break
+        
+        await pubsub.unsubscribe()
     
     return StreamingResponse(
         event_generator(),
@@ -83,10 +86,10 @@ def run(request_id: str):
     )
 
 @app.post('/stop/{request_id}')
-def stop(request_id: str):
-    job_status = QueueManager.get_job_status(request_id)
+async def stop(request_id: str):
+    job_status = await AsyncQueueManager.get_job_status(request_id)
     if job_status:
-        QueueManager.update_job(request_id, "STOPPED")
+        await AsyncQueueManager.update_job(request_id, "STOPPED")
         return {"message": "Stopped successfully."}
     else:
         raise HTTPException(
@@ -104,7 +107,7 @@ def read_root():
         with open("api/frontend/index.html", "r") as f:
             return f.read()
     except FileNotFoundError:
-        return HTMLResponse("<h2>Zenza Frontend index.html not found. Please ensure it exists in the 'api/frontend' directory.</h2>", status_code=404)
+        return HTMLResponse("<h2>Zenza Frontend index.html not found. Please contact Vallabh and ask him to look into it!!!</h2>", status_code=404)
 
 @app.get("/style.css")
 def read_css():
