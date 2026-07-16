@@ -2,6 +2,7 @@ import Editor from '@monaco-editor/react';
 import { useEditorStore } from '../../store/editorStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useExecution } from '../../api/hooks';
+import { useWorkspaceStore } from '../../store/workspaceStore';
 import { TEMPLATES } from '../../store/templates';
 import { Play, Square } from 'lucide-react';
 import { StatusIndicator } from '../output/StatusIndicator';
@@ -12,6 +13,7 @@ export const CodeEditor = () => {
   const code = codes[language];
   const { theme } = useThemeStore();
   const { run, stop, isRunning } = useExecution();
+  const { reduceNoise, setReduceNoise } = useWorkspaceStore();
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
@@ -60,6 +62,18 @@ export const CodeEditor = () => {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="reduce-noise-toggle">
+            <label>
+              <input
+                type="checkbox"
+                checked={reduceNoise}
+                onChange={(e) => setReduceNoise(e.target.checked)}
+                disabled={isRunning}
+              />
+              Reduce Noise
+            </label>
           </div>
 
           <StatusIndicator />

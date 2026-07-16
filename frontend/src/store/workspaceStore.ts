@@ -6,6 +6,8 @@ interface WorkspaceState {
   openOutputModal: (tab?: string) => void;
   closeOutputModal: () => void;
   setActiveOutputTab: (tab: string) => void;
+  reduceNoise: boolean;
+  setReduceNoise: (val: boolean) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
@@ -17,4 +19,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   })),
   closeOutputModal: () => set({ isOutputModalOpen: false }),
   setActiveOutputTab: (tab) => set({ activeOutputTab: tab }),
+  reduceNoise: false,
+  setReduceNoise: (val) => set({ reduceNoise: val }),
 }));

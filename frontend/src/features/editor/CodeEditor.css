@@ -112,6 +112,32 @@
   cursor: not-allowed;
 }
 
+/* Reduce Noise Toggle */
+.reduce-noise-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.reduce-noise-toggle label {
+  font-size: 0.8rem;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.reduce-noise-toggle input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+}
+
+.reduce-noise-toggle input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .monaco-wrapper {
   flex: 1;
   position: relative;

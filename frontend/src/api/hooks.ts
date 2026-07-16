@@ -13,7 +13,7 @@ export const useExecution = () => {
   const code = codes[language];
   const { rootNode, xVar } = useSchemaStore();
   const { addLog, clearLogs, addMetric, clearMetrics, setRunStatus } = useOutputStore();
-  const { openOutputModal } = useWorkspaceStore();
+  const { openOutputModal, reduceNoise } = useWorkspaceStore();
 
   const run = useCallback(async () => {
     if (isRunning) return;
@@ -46,7 +46,7 @@ export const useExecution = () => {
         language,
         input_schema: formatNodeForBackend(rootNode),
         x_var: formatNodeForBackend(xVar),
-        reduce_noise: false,
+        reduce_noise: reduceNoise,
         search: false
       });
 
