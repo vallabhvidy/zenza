@@ -48,7 +48,12 @@ export const TEMPLATES: Template[] = [
     id: 'o1',
     name: 'O(1) Constant',
     complexity: 'O(1)',
-    schema: createArraySchema('300000'),
+    schema: {
+      type: 'input',
+      children: [
+        { type: 'int', name: 'n', min: '1', max: '300000' }
+      ]
+    },
     python: `import sys
 
 def main():
@@ -56,29 +61,25 @@ def main():
     if not lines:
         return
     n = int(lines[0])
-    arr = [int(x) for x in lines[1:n+1]]
     
-    # O(1) operation: access the first element
-    result = arr[0] if arr else 0
+    # O(1) operation: basic constant-time arithmetic
+    result = (n ^ 0x5F3759DF) & 1
     print(result)
 
 if __name__ == '__main__':
     main()
 `,
     cpp: `#include <iostream>
-#include <vector>
 
 int main() {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
     int n;
     if (!(std::cin >> n)) return 0;
-    std::vector<int> arr(n);
-    for (int i = 0; i < n; ++i) {
-        std::cin >> arr[i];
-    }
-    // O(1) operation: access the first element
-    std::cout << (n > 0 ? arr[0] : 0) << std::endl;
+    
+    // O(1) operation: basic constant-time arithmetic
+    int result = (n ^ 0x5F3759DF) & 1;
+    std::cout << result << std::endl;
     return 0;
 }
 `
@@ -87,54 +88,47 @@ int main() {
     id: 'ologn',
     name: 'O(log N) Logarithmic',
     complexity: 'O(log N)',
-    schema: createArraySchema('300000', true),
+    schema: {
+      type: 'input',
+      children: [
+        { type: 'int', name: 'n', min: '1', max: '300000' }
+      ]
+    },
     python: `import sys
-
-def binary_search(arr, target):
-    low = 0
-    high = len(arr) - 1
-    while low <= high:
-        mid = (low + high) // 2
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            low = mid + 1
-        else:
-            high = mid - 1
-    return -1
 
 def main():
     lines = sys.stdin.read().split()
     if not lines:
         return
     n = int(lines[0])
-    arr = [int(x) for x in lines[1:n+1]]
     
-    # O(log N) operation: binary search for a fixed element
-    # Note: Requires a sorted array, which our loaded schema automatically configures.
-    result = binary_search(arr, 50)
-    print(result)
+    # O(log N) operation: divide n by 2 until it reaches 0
+    steps = 0
+    temp = n
+    while temp > 0:
+        steps += 1
+        temp //= 2
+    print(steps)
 
 if __name__ == '__main__':
     main()
 `,
     cpp: `#include <iostream>
-#include <vector>
-#include <algorithm>
 
 int main() {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
     int n;
     if (!(std::cin >> n)) return 0;
-    std::vector<int> arr(n);
-    for (int i = 0; i < n; ++i) {
-        std::cin >> arr[i];
+    
+    // O(log N) operation: divide n by 2 until it reaches 0
+    int steps = 0;
+    int temp = n;
+    while (temp > 0) {
+        steps++;
+        temp /= 2;
     }
-    // O(log N) operation: binary search on a sorted vector
-    // Note: Requires a sorted array, which our loaded schema automatically configures.
-    bool found = std::binary_search(arr.begin(), arr.end(), 50);
-    std::cout << (found ? "Found" : "Not Found") << std::endl;
+    std::cout << steps << std::endl;
     return 0;
 }
 `
@@ -187,9 +181,14 @@ int main() {
   },
   {
     id: 'onlogn',
-    name: 'O(N log N) Sorting',
+    name: 'O(N log N) Log-Linear',
     complexity: 'O(N log N)',
-    schema: createArraySchema('100000'),
+    schema: {
+      type: 'input',
+      children: [
+        { type: 'int', name: 'n', min: '1', max: '300000' }
+      ]
+    },
     python: `import sys
 
 def main():
@@ -197,31 +196,38 @@ def main():
     if not lines:
         return
     n = int(lines[0])
-    arr = [int(x) for x in lines[1:n+1]]
     
-    # O(N log N) operation: TimSort
-    arr.sort()
-    print(arr[n // 2] if n > 0 else 0)
+    # O(N log N) operation: N iterations, each taking log(i) steps
+    ans = 0
+    for i in range(1, n + 1):
+        temp = i
+        while temp > 0:
+            ans += temp % 2
+            temp //= 2
+            
+    print(ans)
 
 if __name__ == '__main__':
     main()
 `,
     cpp: `#include <iostream>
-#include <vector>
-#include <algorithm>
 
 int main() {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
     int n;
     if (!(std::cin >> n)) return 0;
-    std::vector<int> arr(n);
-    for (int i = 0; i < n; ++i) {
-        std::cin >> arr[i];
+    
+    // O(N log N) operation: N iterations, each taking log(i) steps
+    long long ans = 0;
+    for (int i = 1; i <= n; ++i) {
+        int temp = i;
+        while (temp > 0) {
+            ans += temp % 2;
+            temp /= 2;
+        }
     }
-    // O(N log N) operation: std::sort (IntroSort)
-    std::sort(arr.begin(), arr.end());
-    std::cout << (n > 0 ? arr[n / 2] : 0) << std::endl;
+    std::cout << ans << std::endl;
     return 0;
 }
 `
